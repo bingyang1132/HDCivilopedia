@@ -50,8 +50,53 @@ public class Init {
     };
     public static final Set<String> SKIP_MODINFO_KEYWORDS = new HashSet<>(Arrays.asList(
         "Cheat",
-        "BetterLoadingScreen"   
+        "BetterLoadingScreen"
     ));
+
+    // ---- performance / test knobs ----
+    // -Dhd.verbose=true (or env HD_VERBOSE) re-enables the noisy per-file/per-row logging.
+    public static final boolean VERBOSE = parseBool(System.getProperty("hd.verbose", System.getenv("HD_VERBOSE")));
+    // -Dhd.limit=N (or env HD_LIMIT) caps how many requests loadDLCs processes, for quick smoke runs.
+    public static final int LIMIT = parseInt(System.getProperty("hd.limit", System.getenv("HD_LIMIT")), -1);
+
+    private static boolean parseBool(String s) {
+        return s != null && s.equalsIgnoreCase("true");
+    }
+
+    private static int parseInt(String s, int def) {
+        try { return s == null ? def : Integer.parseInt(s.trim()); } catch (Exception e) { return def; }
+    }
+
+    /** Prints how long a named init step took. */
+    static void logTime(String name, long startNano) {
+        System.out.printf("[TIME] %-18s %8.2fs%n", name, (System.nanoTime() - startNano) / 1e9);
+    }
+
+    /**
+     * Tunes a connection for fast bulk writing: in-memory journal + no fsync (the
+     * databases are throwaway copies rebuilt from the game cache), and turns off
+     * autocommit so writes are batched into transactions instead of one fsync per row.
+     */
+    static void tuneForBulkWrite(Connection c) {
+        try (Statement s = c.createStatement()) {
+            s.execute("PRAGMA journal_mode=MEMORY;");
+            s.execute("PRAGMA synchronous=OFF;");
+        } catch (Exception e) {
+            // pragmas are best-effort
+        }
+        try { c.setAutoCommit(false); } catch (Exception e) {}
+    }
+
+    /** Commits a non-autocommit connection, swallowing errors. */
+    static void commitQuietly(Connection c) {
+        try { if (c != null && !c.getAutoCommit()) c.commit(); } catch (Exception e) {}
+    }
+
+    /** Commits and closes a connection used for bulk writing. */
+    static void finishBulkWrite(Connection c) {
+        commitQuietly(c);
+        try { if (c != null && !c.isClosed()) c.close(); } catch (Exception e) {}
+    }
 
 
     // copy databases from usr file
@@ -140,6 +185,7 @@ public class Init {
         //     }
         // });
 
+        tuneForBulkWrite(connection);
         Statement statement = connection.createStatement();
 
         // load extra tables in extra.sqlite
@@ -173,6 +219,7 @@ public class Init {
             }
         }
         statement.close();
+        finishBulkWrite(connection);
     }
 
     // create a request class to store the mod information, like a package of .modinfo file
@@ -446,11 +493,19 @@ public class Init {
         Collections.sort(igaRequests);
         System.out.println("Sorting completed.");
 
-        Statement gameplayStatement = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE).createStatement();
-        Statement extraStatement = DriverManager.getConnection(Tools.EXTRA_DATABASE).createStatement();
-        Statement textStatement = DriverManager.getConnection(Tools.TEXT_DATABASE).createStatement();
-        Statement configStatement = DriverManager.getConnection(Tools.CONFIG_DATABASE).createStatement(); // debugConfiguration
-        Statement nohdTextStatement = DriverManager.getConnection(Tools.NOHD_TEXT_DATABASE).createStatement();
+        Connection gameplayConn = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE);
+        Connection extraConn = DriverManager.getConnection(Tools.EXTRA_DATABASE);
+        Connection textConn = DriverManager.getConnection(Tools.TEXT_DATABASE);
+        Connection configConn = DriverManager.getConnection(Tools.CONFIG_DATABASE); // debugConfiguration
+        Connection nohdTextConn = DriverManager.getConnection(Tools.NOHD_TEXT_DATABASE);
+        for (Connection c : new Connection[]{gameplayConn, extraConn, textConn, configConn, nohdTextConn}) {
+            tuneForBulkWrite(c);
+        }
+        Statement gameplayStatement = gameplayConn.createStatement();
+        Statement extraStatement = extraConn.createStatement();
+        Statement textStatement = textConn.createStatement();
+        Statement configStatement = configConn.createStatement();
+        Statement nohdTextStatement = nohdTextConn.createStatement();
 
         // process all requests
         int n = 0;
@@ -458,9 +513,11 @@ public class Init {
 
         // process all <frontEndActions> requests
         System.out.println("processing frontEndActions");
+        long feaStart = System.nanoTime();
         for (Request request : feaRequests) {
+            if (LIMIT >= 0 && n >= LIMIT) break;
             // progress bar
-            System.out.println("Processing fea request: " + request);
+            if (VERBOSE) System.out.println("Processing fea request: " + request);
             System.out.println(n + "/" + N + ": order=" + request.order + " " + "files=" + request.files.size());
             n++;
             // ? why comment these loadAsData lines?
@@ -468,10 +525,10 @@ public class Init {
             for (File file : request.files) {
                 loading = file;
                 try {
-                    System.out.println("Processing file: " + file.getAbsolutePath());
+                    if (VERBOSE) System.out.println("Processing file: " + file.getAbsolutePath());
                     // skip heroes
                     if(file.getAbsolutePath().contains("Hero")){
-                        System.out.println("skipped file bacause of heroes:" + file.getAbsolutePath());
+                        if (VERBOSE) System.out.println("skipped file bacause of heroes:" + file.getAbsolutePath());
                         continue;
                     }
                     switch (request.type) {
@@ -503,20 +560,26 @@ public class Init {
                     // logError(errorMessage);
                 }
             }
+            commitQuietly(extraConn);
+            commitQuietly(textConn);
+            commitQuietly(nohdTextConn);
         }
+        logTime("loadDLCs.fea", feaStart);
         // process all <inGameActions> requests
         System.out.println("processing inGameActions");
+        long igaStart = System.nanoTime();
         for (Request request : igaRequests) {
-            System.out.println("Processing iga request: " + request);
+            if (LIMIT >= 0 && n >= LIMIT) break;
+            if (VERBOSE) System.out.println("Processing iga request: " + request);
             System.out.println(n + "/" + N + ": order=" + request.order + " " + "files=" + request.files.size());
             n++;
             for (File file : request.files) {
                 loading = file;
                 try {
-                    System.out.println("Processing file: " + file.getAbsolutePath());
+                    if (VERBOSE) System.out.println("Processing file: " + file.getAbsolutePath());
                     // skip heroes
                     if(file.getAbsolutePath().contains("hero")){
-                        System.out.println("skipped file bacause of heroes:" + file.getAbsolutePath());
+                        if (VERBOSE) System.out.println("skipped file bacause of heroes:" + file.getAbsolutePath());
                         continue;
                     }
 
@@ -551,7 +614,11 @@ public class Init {
                     // errorFiles.add(file);
                 }
             }
+            commitQuietly(extraConn);
+            commitQuietly(textConn);
+            commitQuietly(nohdTextConn);
         }
+        logTime("loadDLCs.iga", igaStart);
         System.out.println("Database init completed.");
 
         // // Again, process all <frontEndActions> requests, only HD
@@ -665,21 +732,29 @@ public class Init {
         //     }
         // }
 
-        gameplayStatement.close();
-        extraStatement.close();
-        textStatement.close();
-        nohdTextStatement.close();
+        finishBulkWrite(gameplayConn);
+        finishBulkWrite(extraConn);
+        finishBulkWrite(textConn);
+        finishBulkWrite(configConn);
+        finishBulkWrite(nohdTextConn);
     }
 
     public static void initFix() {
+        Connection extraConn = null;
+        Connection gameplayConn = null;
         try {
-            Statement extra = DriverManager.getConnection(Tools.EXTRA_DATABASE).createStatement();
-            DataBaseLoader.loadSQL(new File("fix/fix_extra.sql"), extra);
+            extraConn = DriverManager.getConnection(Tools.EXTRA_DATABASE);
+            tuneForBulkWrite(extraConn);
+            DataBaseLoader.loadSQL(new File("scripts/fix/fix_extra.sql"), extraConn.createStatement());
 
-            Statement gameplay = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE).createStatement();
-            DataBaseLoader.loadSQL(new File("fix/fix_gameplay.sql"), gameplay);
+            gameplayConn = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE);
+            tuneForBulkWrite(gameplayConn);
+            DataBaseLoader.loadSQL(new File("scripts/fix/fix_gameplay.sql"), gameplayConn.createStatement());
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            finishBulkWrite(extraConn);
+            finishBulkWrite(gameplayConn);
         }
     }
 
@@ -741,11 +816,12 @@ public class Init {
         new File("processed_files_log.txt").delete();
 
         try {
-            copyDatabases();
-            addTables();
-            loadDLCs();
-            initFix();
-            writeErrors();
+            long t;
+            t = System.nanoTime(); copyDatabases(); logTime("copyDatabases", t);
+            t = System.nanoTime(); addTables();     logTime("addTables", t);
+            t = System.nanoTime(); loadDLCs();       logTime("loadDLCs", t);
+            t = System.nanoTime(); initFix();        logTime("initFix", t);
+            t = System.nanoTime(); writeErrors();    logTime("writeErrors", t);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -799,6 +875,7 @@ public class Init {
     }
     
     public static void logProcessedFile(File file) {
+        if (!VERBOSE) return; // per-file logging is the fea-loop hotspot; opt in via -Dhd.verbose
         try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream("processed_files_log.txt", true)))) {
             writer.write(file.getAbsolutePath());
             writer.newLine();

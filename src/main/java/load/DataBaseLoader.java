@@ -62,7 +62,7 @@ public class DataBaseLoader {
     }
 
     public static void loadSQL(File file, Statement statement) throws Exception {
-        System.out.println("Loading SQL file: " + file.getAbsolutePath());
+        if (Init.VERBOSE) System.out.println("Loading SQL file: " + file.getAbsolutePath());
 
         String text = Tools.readFromFile(file);
 
@@ -105,7 +105,7 @@ public class DataBaseLoader {
                 // System.out.println("Modified SQL: ");
                 // System.out.println("Original: " + originalLine);
                 // System.out.println("Modified: " + lines[i]);
-                System.out.println("Modified SQL in file: " + file.getName());
+                if (Init.VERBOSE) System.out.println("Modified SQL in file: " + file.getName());
             }
 
             
@@ -267,13 +267,13 @@ public class DataBaseLoader {
                 Element table = (Element) node;
                 String tableName = table.getTagName();
                 // print which table
-                System.out.println("Loading table: " + tableName);
+                if (Init.VERBOSE) System.out.println("Loading table: " + tableName);
 
                 NodeList rows = table.getElementsByTagName("Row");
                 for (int j = 0; j < rows.getLength(); j++) {
                     Node row = rows.item(j);
                     if (shouldFilter(row)) {
-                        System.out.println("Skipping filtered row: " + nodeToString(row));
+                        if (Init.VERBOSE) System.out.println("Skipping filtered row: " + nodeToString(row));
                         continue;
                     }
                     
@@ -284,7 +284,7 @@ public class DataBaseLoader {
                 for (int j = 0; j < replaces.getLength(); j++) {
                     Node replace = replaces.item(j);
                     if (shouldFilter(replace)) {
-                        System.out.println("Skipping filtered replace: " + nodeToString(replace) );
+                        if (Init.VERBOSE) System.out.println("Skipping filtered replace: " + nodeToString(replace) );
                         continue;
                     }
                     excuteRow(replaces.item(j), statement, tableName);

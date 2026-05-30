@@ -20,6 +20,8 @@ log_*.txt
 /database/
 /json/
 /icons/
+ChangelogResouce.json
+*_log.txt
 
 # Build
 /target/

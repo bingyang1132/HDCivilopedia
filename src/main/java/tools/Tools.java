@@ -20,7 +20,9 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -37,6 +39,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 public class Tools implements Constants {
+
+    // ---- query result caches (keys are content-derived; results are deterministic) ----
+    private static final String NULL = "__NULL__";
+    private static final BufferedImage NO_IMAGE = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+    private static final Map<String, String> TEXT_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, String> RAW_TEXT_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, BufferedImage> IMAGE_CACHE = new ConcurrentHashMap<>();
+    private static final Map<String, BufferedImage> IMAGE_CI_CACHE = new ConcurrentHashMap<>();
 
     public static String getControlText(String tag, String language) {
         switch (tag) {
@@ -2843,8 +2853,8 @@ public class Tools implements Constants {
         Statement localization = null;
         Statement nohdLocalization = null;
         try {
-            localization = DriverManager.getConnection(TEXT_DATABASE).createStatement();
-            nohdLocalization = DriverManager.getConnection(NOHD_TEXT_DATABASE).createStatement();
+            localization = Db.conn(TEXT_DATABASE).createStatement();
+            nohdLocalization = Db.conn(NOHD_TEXT_DATABASE).createStatement();
             Workbook workbook = new XSSFWorkbook();
             Sheet sheet = workbook.createSheet("Texts");
             CellStyle yellow = workbook.createCellStyle();
@@ -2939,6 +2949,11 @@ public class Tools implements Constants {
         if (tag != null && tag.contains("{")) {
             return analyzeBraces(tag, language, modifierID);
         }
+        String key = tag + "\u0001" + language + "\u0001" + modifierID;
+        String cached = TEXT_CACHE.get(key);
+        if (cached != null) {
+            return cached == NULL ? null : cached;
+        }
         String text = tryGetText(tag, language, modifierID);
         if (text == null && language.equals("zh_Hans_CN")) {
             text = tryGetText(tag, "zh_Hans", modifierID);
@@ -2952,6 +2967,7 @@ public class Tools implements Constants {
                 text = analyzeBraces(raw, language, modifierID);
             }
         }
+        TEXT_CACHE.put(key, text == null ? NULL : text);
         return text;
     }
 
@@ -3006,7 +3022,7 @@ public class Tools implements Constants {
                             var = sub;
                         }
                         String value = null;
-                        gameplay = DriverManager.getConnection(GAMEPLAY_DATABASE).createStatement();
+                        gameplay = Db.conn(GAMEPLAY_DATABASE).createStatement();
                         ResultSet r1 = gameplay.executeQuery("select * from ModifierArguments where ModifierId = \"" + modifierID + "\" and lower(Name) = lower(\"" + sub.split("\\W")[0] + "\");");
                         if (r1.next()) {
                             value = r1.getString("Value");
@@ -3077,20 +3093,21 @@ public class Tools implements Constants {
     }
 
     public static String tryGetRawText (String tag, String language) {
+        String key = tag + "\u0001" + language;
+        String cached = RAW_TEXT_CACHE.get(key);
+        if (cached != null) {
+            return cached == NULL ? null : cached;
+        }
+        String result = null;
         Statement text = null;
         try {
-            text = DriverManager.getConnection(TEXT_DATABASE).createStatement();
+            text = Db.conn(TEXT_DATABASE).createStatement();
             ResultSet r1 = text.executeQuery("select * from LocalizedText where Language = \"" + language + "\" and Tag = \"" + tag + "\";");
             r1.next();
             String s = r1.getString("Text");
-            text.close();
-            if ((s.contains("TRANSLATION MISSING") || s.contains("MISMATCHED TRANSLATION"))) {
-                return null;
+            if (!(s.contains("TRANSLATION MISSING") || s.contains("MISMATCHED TRANSLATION")) && !s.isEmpty()) {
+                result = s;
             }
-            if (s.isEmpty()) {
-                return null;
-            }
-            return s;
         } catch (Exception e) {
         } finally {
             if (text != null) {
@@ -3100,7 +3117,8 @@ public class Tools implements Constants {
                 }
             }
         }
-        return null;
+        RAW_TEXT_CACHE.put(key, result == null ? NULL : result);
+        return result;
     }
 
     public static String tryGetText(String tag, String language, String modifierID) {
@@ -3112,8 +3130,14 @@ public class Tools implements Constants {
     }
 
     public static BufferedImage getImageIgnoringCapital(String name) {
+        BufferedImage cachedImg = IMAGE_CI_CACHE.get(name);
+        if (cachedImg != null) {
+            return cachedImg == NO_IMAGE ? null : cachedImg;
+        }
+        BufferedImage result = null;
+        Statement extra = null;
         try {
-            Statement extra = DriverManager.getConnection(EXTRA_DATABASE).createStatement();
+            extra = Db.conn(EXTRA_DATABASE).createStatement();
             ResultSet r1 = extra.executeQuery("select * from IconDefinitions where lower(Name) = lower(\"" + name + "\");");
             int num = 0;
             while (r1.next()) {
@@ -3126,18 +3150,27 @@ public class Tools implements Constants {
                 }
                 String atlas = r1.getString("Atlas");
                 int index = Integer.parseInt(r1.getString("Idx"));
-                BufferedImage image = tryGetImage(atlas, index);
-                if (image != null) return image;
+                result = tryGetImage(atlas, index);
             }
         } catch (Exception e) {
+        } finally {
+            if (extra != null) {
+                try { extra.close(); } catch (Exception e) {}
+            }
         }
-        //System.out.println("can't find image " + name);
-        return null;
+        IMAGE_CI_CACHE.put(name, result == null ? NO_IMAGE : result);
+        return result;
     }
 
     public static BufferedImage getImage(String name) {
+        BufferedImage cachedImg = IMAGE_CACHE.get(name);
+        if (cachedImg != null) {
+            return cachedImg == NO_IMAGE ? null : cachedImg;
+        }
+        BufferedImage result = null;
+        Statement extra = null;
         try {
-            Statement extra = DriverManager.getConnection(EXTRA_DATABASE).createStatement();
+            extra = Db.conn(EXTRA_DATABASE).createStatement();
             ResultSet r1 = extra.executeQuery("select * from IconDefinitions where Name = \"" + name + "\";");
             int num = 0;
             while (r1.next()) {
@@ -3150,18 +3183,21 @@ public class Tools implements Constants {
                 }
                 String atlas = r1.getString("Atlas");
                 int index = Integer.parseInt(r1.getString("Idx"));
-                BufferedImage image = tryGetImage(atlas, index);
-                if (image != null) return image;
+                result = tryGetImage(atlas, index);
             }
         } catch (Exception e) {
+        } finally {
+            if (extra != null) {
+                try { extra.close(); } catch (Exception e) {}
+            }
         }
-        //System.out.println("can't find image " + name);
-        return null;
+        IMAGE_CACHE.put(name, result == null ? NO_IMAGE : result);
+        return result;
     }
 
     public static BufferedImage tryGetImage(String atlas, int index) {
         try {
-            Statement extra = DriverManager.getConnection(EXTRA_DATABASE).createStatement();
+            Statement extra = Db.conn(EXTRA_DATABASE).createStatement();
             ResultSet r2 = extra.executeQuery("select * from IconTextureAtlases where Name = \"" + atlas + "\" order by IconSize desc;");
             r2.next();
             int perRow = r2.getInt("IconsPerRow");

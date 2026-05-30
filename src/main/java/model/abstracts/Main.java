@@ -23,40 +23,50 @@ public class Main {
     public static final List<Writable> WRITABLES = new ArrayList<>();
     public static final Map<String, Writable> WRITABLES_ZHINDEX = new HashMap<>();
 
-    public static void load () {
-        Era.load();
-        Civilization.load();
-        Leader.load();
-        Trait.load();
-        Unit.load();
-        District.load();
-        Building.load(); 
-        Improvement.load();
-        CityState.load();
-        YieldChange.load();
-        Technology.load();
-        Civic.load();
-        Wonder.load();
-        UnitPromotion.load();
-        UnitPromotionClass.load();
-        GreatPerson.load();
-        Government.load();
-        Policy.load();
-        Commemoration.load();
-        Commemoration_CN.load();
-        Belief.load();
-        Terrain.load();
-        Feature.load();
-        NaturalWonder.load();
-		ResourceCategory.load();
-        Resource.load();
-        Governor.load();
-        GovernorPromotion.load();
-        Project.load();
+    /** Runs a named step, printing how long it took (helps locate slow stages). */
+    public static void timed (String name, Runnable step) {
+        long start = System.nanoTime();
+        step.run();
+        double secs = (System.nanoTime() - start) / 1e9;
+        System.out.printf("[TIME] %-22s %8.2fs%n", name, secs);
+    }
 
-        Trait.linkData();
-        District.linkData();
-        Unit.linkData();
+    public static void load () {
+        long start = System.nanoTime();
+        timed("Era", Era::load);
+        timed("Civilization", Civilization::load);
+        timed("Leader", Leader::load);
+        timed("Trait", Trait::load);
+        timed("Unit", Unit::load);
+        timed("District", District::load);
+        timed("Building", Building::load);
+        timed("Improvement", Improvement::load);
+        timed("CityState", CityState::load);
+        timed("YieldChange", YieldChange::load);
+        timed("Technology", Technology::load);
+        timed("Civic", Civic::load);
+        timed("Wonder", Wonder::load);
+        timed("UnitPromotion", UnitPromotion::load);
+        timed("UnitPromotionClass", UnitPromotionClass::load);
+        timed("GreatPerson", GreatPerson::load);
+        timed("Government", Government::load);
+        timed("Policy", Policy::load);
+        timed("Commemoration", Commemoration::load);
+        timed("Commemoration_CN", Commemoration_CN::load);
+        timed("Belief", Belief::load);
+        timed("Terrain", Terrain::load);
+        timed("Feature", Feature::load);
+        timed("NaturalWonder", NaturalWonder::load);
+        timed("ResourceCategory", ResourceCategory::load);
+        timed("Resource", Resource::load);
+        timed("Governor", Governor::load);
+        timed("GovernorPromotion", GovernorPromotion::load);
+        timed("Project", Project::load);
+
+        timed("Trait.linkData", Trait::linkData);
+        timed("District.linkData", District::linkData);
+        timed("Unit.linkData", Unit::linkData);
+        System.out.printf("[TIME] %-22s %8.2fs%n", "== load() total", (System.nanoTime() - start) / 1e9);
     }
 
     public static void write (String language) {
@@ -101,6 +111,8 @@ public class Main {
     }
 
     public static void main(String[] args) throws Exception {
+        long runStart = System.nanoTime();
+        try {
         if (args.length > 0) {
             String cmd = args[0];
             if (cmd.equals("page")) {
@@ -143,29 +155,30 @@ public class Main {
                 ChangelogResource.saveResourceFile();
             }
         } else {
+            // -----------------------常规流程---------------------------------------------
             // one-time run
             System.out.println("initializing...");
             Init.main(null);
 
-            System.out.println("icons...");
-            Init.initIcons();
+            // System.out.println("icons...");
+            // Init.initIcons();
 
-            System.out.println("loading content...");
-            load();
+            // System.out.println("loading content...");
+            // load();
 
-            Page.deleteFiles(new File("json"));
+            // Page.deleteFiles(new File("json"));
 
-            System.out.println("writing json...");
-            writeAll();
+            // System.out.println("writing json...");
+            // writeAll();
             
-            // 初始化changelog需要手动 args: build <version> <output>[optional]
-            System.out.println("saving changelog resource...");
-            ChangelogResource.saveResourceFile();
+            // // 初始化changelog需要手动 args: build <version> <output>[optional]
+            // System.out.println("saving changelog resource...");
+            // ChangelogResource.saveResourceFile();
 
-            System.out.println("converting json into html...");
-            Page.convertAll();
+            // System.out.println("converting json into html...");
+            // Page.convertAll();
 
-
+            // ---------------------------------------------------------------------------
             // System.out.println("loading...");
             // load();
             
@@ -183,6 +196,10 @@ public class Main {
             // ChangelogResource.saveResourceFile();
 
             System.out.println("done");
+        }
+        } finally {
+            tools.Db.shutdown();
+            System.out.printf("[TIME] %-22s %8.2fs%n", "== TOTAL", (System.nanoTime() - runStart) / 1e9);
         }
     }
 }
