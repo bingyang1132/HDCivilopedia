@@ -157,26 +157,26 @@ public class Main {
         } else {
             // -----------------------常规流程---------------------------------------------
             // one-time run
-            System.out.println("initializing...");
-            Init.main(null);
+            // System.out.println("initializing...");
+            // Init.main(null);
 
-            // System.out.println("icons...");
-            // Init.initIcons();
+            System.out.println("icons...");
+            Init.initIcons();
 
-            // System.out.println("loading content...");
-            // load();
+            System.out.println("loading content...");
+            load();
 
-            // Page.deleteFiles(new File("json"));
+            Page.deleteFiles(new File("json"));
 
-            // System.out.println("writing json...");
-            // writeAll();
+            System.out.println("writing json...");
+            writeAll();
             
-            // // 初始化changelog需要手动 args: build <version> <output>[optional]
-            // System.out.println("saving changelog resource...");
-            // ChangelogResource.saveResourceFile();
+            // 初始化changelog需要手动 args: build <version> <output>[optional]
+            System.out.println("saving changelog resource...");
+            ChangelogResource.saveResourceFile();
 
-            // System.out.println("converting json into html...");
-            // Page.convertAll();
+            System.out.println("converting json into html...");
+            Page.convertAll();
 
             // ---------------------------------------------------------------------------
             // System.out.println("loading...");
