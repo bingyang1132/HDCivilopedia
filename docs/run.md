@@ -1,35 +1,62 @@
-## run
-先用vscode自动编译一下
+# 运行教程
 
-最后一个词是arg
-cmd /C ""C:\Program Files\Java\jre-1.8\bin\java.exe" -cp C:\Users\1132\AppData\Local\Temp\cp_echr0d65y5xfcx4ndrg8iys0j.jar model.abstracts.Main init"
+HD Civilopedia 生成工具的构建与运行说明。入口类 `model.abstracts.Main`。
 
-cmd /C ""C:\Program Files\Java\jre-1.8\bin\java.exe" -cp C:\Users\1132\AppData\Local\Temp\cp_echr0d65y5xfcx4ndrg8iys0j.jar model.abstracts.Main "
+## 1. 构建
 
-## 顺序
-init
-icons
-changelog
-build 貌似不必要？
-page
+需要 JDK（项目目标 Java 8，用 JDK 17/22 经 Maven 编译亦可）。
 
-## 性能开关 / 小规模测试
-
-运行参数（系统属性 `-Dxxx`，或同名大写环境变量）：
-- `-Dhd.verbose=true`：恢复每文件/每行的详细日志（默认关闭，关闭可大幅提速 init）。默认只打每个 request 的进度条。
-- `-Dhd.limit=N`：init 的 loadDLCs 只处理前 N 个 request，用于几分钟内跑通做冒烟测试。
-
-各阶段会打印 `[TIME] <阶段> <秒>`（init 的 copyDatabases/addTables/loadDLCs/initFix，以及 loadDLCs 内 fea/iga 两循环；load() 内每个模型）。
-
-### 快速迭代：不要每次都跑 3h 的 init
-init 把游戏数据建进 `database/` 后会持久保留。调试 load/write（已优化的部分）时**跳过 init**，直接反复跑：
 ```
-... model.abstracts.Main changelog   # 读 database/ → 生成 json
-... model.abstracts.Main page        # json → html
+mvn compile          # 仅编译（命令行）
 ```
-只有当游戏数据/Mod 变化、需要重建 `database/` 时才重新跑一次 `init`。
 
-示例（冒烟，限 50 个 request + 详细日志）：
+或在 VSCode 里用 Java 扩展自动编译。运行时实际用 JRE 8 跑（见 `.vscode/settings.json` 的 `JavaSE-1.8` 运行时配置）。
+
+> 数据库、游戏贴图等输入路径硬编码在 `tools/Constants.java`（`STEAM_FOLDER`、`DATABASES_SOURCE`、`DDS_FOLDERS` 等）。换机器/换游戏版本时需改这里。
+
+## 2. 流水线与命令
+
+`Main` 第一个参数是命令，整体顺序：
+
+| 命令 | 作用 | 输入 → 输出 |
+|---|---|---|
+| `init` | 从游戏缓存重建数据库 | 游戏 Cache → `database/*.sqlite` |
+| `icons` | 解码 DDS、切图标 | `database/` + 游戏贴图 → `output/icons/*.png` |
+| `changelog` | 加载内容并写 JSON | `database/` → `json/` |
+| `page` | JSON 渲染为 HTML | `json/` → `output/` |
+| `build <version> [out]` | 生成更新日志 JSON | Changelog 文本 → `manual/json/.../updates/` |
+
+无参运行：执行 `icons → load → write → page` 全流程（默认**跳过 init**，复用已建好的 `database/`）。需要重建数据库时单独先跑一次 `init`。
+
+运行示例（VSCode 编译后用 JRE 8 跑 classpath，参考你环境里的临时 classpath jar）：
 ```
-... -Dhd.limit=50 -Dhd.verbose=true model.abstracts.Main init
+java -cp <classpath> model.abstracts.Main init
+java -cp <classpath> model.abstracts.Main          # 无参 = 全流程(跳过init)
 ```
+
+## 3. 快速迭代（不要每次都跑 init）
+
+`init` 把游戏数据建进 `database/` 后会持久保留。调试 `load`/`write`/`page` 时**跳过 init**，直接反复跑 `changelog` / `page` 即可。只有游戏数据/Mod 变化、需要重建 `database/` 时才重跑 `init`。
+
+## 4. 性能开关 / 小规模测试
+
+通过系统属性 `-Dxxx`（或同名大写环境变量）控制：
+
+- `-Dhd.verbose=true`（或 `HD_VERBOSE`）：恢复每文件/每行的详细日志。**默认关闭**——关闭后只打每个 request 的进度条，可大幅提速 init。
+- `-Dhd.limit=N`（或 `HD_LIMIT`）：init 的 `loadDLCs` 只处理前 N 个 request，用于几分钟内跑通做冒烟测试。
+
+各阶段会打印 `[TIME] <阶段> <秒>`：
+- init：`copyDatabases / addTables / loadDLCs / initFix / writeErrors`，以及 `loadDLCs` 内的 `fea` / `iga` 两循环。
+- load：每个模型（Era / Building / Technology …）+ `== load() total`。
+- 全程：`== TOTAL`。
+
+冒烟示例（限 50 个 request + 详细日志）：
+```
+java -Dhd.limit=50 -Dhd.verbose=true -cp <classpath> model.abstracts.Main init
+```
+
+## 5. 正确性验证
+
+性能优化不应改变产物。验证方式：
+- DB 层抽查：`sqlite3 database/DebugGameplay.sqlite "select count(*) from Buildings;"` 等关键表行数是否合理（建筑数百、本地化数万）。
+- 产物层：跑 `changelog`+`page` 后抽查 `json/` / `output/` 几个条目（标题、图标、链接、含 `[]`/`{}` 的动态文本是否正常）；如有上一版产物备份，`diff -r` 比对应无差异。
