@@ -157,8 +157,8 @@ public class Main {
         } else {
             // -----------------------常规流程---------------------------------------------
             // one-time run
-            // System.out.println("initializing...");
-            // Init.main(null);
+            System.out.println("initializing...");
+            Init.main(null);
 
             System.out.println("icons...");
             Init.initIcons();

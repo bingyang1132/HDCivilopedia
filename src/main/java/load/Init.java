@@ -59,6 +59,29 @@ public class Init {
     // -Dhd.limit=N (or env HD_LIMIT) caps how many requests loadDLCs processes, for quick smoke runs.
     public static final int LIMIT = parseInt(System.getProperty("hd.limit", System.getenv("HD_LIMIT")), -1);
 
+    // Mods (by folder name under any scanned mods/DLC dir) to ignore entirely. These are
+    // present locally but not wanted in the manual build — e.g. "Horse" bundles its own
+    // copy of BetterChinese that loads after HD and clobbers HD's text overrides.
+    // Matching is case-insensitive. Extend at runtime with -Dhd.skipMods=Name1,Name2 (or env HD_SKIP_MODS).
+    public static final Set<String> SKIP_MODS = buildSkipMods(
+        "Horse",
+        "OneProduction",
+        "NormalCiv2",
+        "NormalCiv3"
+    );
+
+    private static Set<String> buildSkipMods(String... defaults) {
+        Set<String> set = new HashSet<>();
+        for (String d : defaults) set.add(d.toLowerCase());
+        String extra = System.getProperty("hd.skipMods", System.getenv("HD_SKIP_MODS"));
+        if (extra != null) {
+            for (String s : extra.split(",")) {
+                if (!s.trim().isEmpty()) set.add(s.trim().toLowerCase());
+            }
+        }
+        return set;
+    }
+
     private static boolean parseBool(String s) {
         return s != null && s.equalsIgnoreCase("true");
     }
@@ -271,6 +294,11 @@ public class Init {
             boolean skip_flag = false;
             // directory only
             if(dlc.isFile()) {
+                continue;
+            }
+            // skip explicitly-blacklisted mods (see SKIP_MODS), case-insensitive
+            if(SKIP_MODS.contains(dlc.getName().toLowerCase())) {
+                System.out.println("Skipping blacklisted mod: " + dlc.getName());
                 continue;
             }
             // skip scenarios

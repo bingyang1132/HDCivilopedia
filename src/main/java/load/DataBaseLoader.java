@@ -32,6 +32,18 @@ import org.xml.sax.SAXException;
 import tools.Tools;
 
 public class DataBaseLoader {
+    // -Dhd.trace=<TAG> prints every SQL/XML write that mentions TAG, in execution order
+    // (the last one printed is the value that ends up in the DB). For debugging overrides.
+    public static final String TRACE = System.getProperty("hd.trace", System.getenv("HD_TRACE"));
+
+    private static void trace(String where, String src, String stmt) {
+        if (TRACE != null && stmt != null && stmt.contains(TRACE)) {
+            String s = stmt.replaceAll("\\s+", " ").trim();
+            if (s.length() > 160) s = s.substring(0, 160) + "...";
+            System.out.println("[TRACE] " + where + " <= " + src + " :: " + s);
+        }
+    }
+
     private static final Set<String> FILTER_KEYWORDS = new HashSet<>(Arrays.asList(
         "HEROES",
         "Heroes",
@@ -138,6 +150,7 @@ public class DataBaseLoader {
                 lines[i] = lines[i].replaceAll("'Index'", "'Idx'");
             }
 
+            trace("SQL", file.getName(), lines[i]);
             try {
                 statement.execute(lines[i]);
             } catch (Exception e) {
@@ -243,6 +256,7 @@ public class DataBaseLoader {
 
         String command = "insert or replace into " + tableName + " (" + keys + ") values (" + values + ");";
 
+        trace("XML", String.valueOf(Init.loading), command);
         try {
             statement.execute(command);
         } catch (Exception e) {
