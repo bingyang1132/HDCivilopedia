@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Districts",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Districts"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of districts, need to be edited."
+        }
+    ]
+}

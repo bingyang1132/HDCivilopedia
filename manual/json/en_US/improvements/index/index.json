@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Improvements",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Improvements"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of improvements, need to be edited."
+        }
+    ]
+}

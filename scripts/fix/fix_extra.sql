@@ -1,0 +1,15 @@
+update IconTextureAtlases set IconsPerRow = "1" where Name = "ICON_ATLAS_BDI_STK4";
+update IconTextureAtlases set IconsPerColumn = "4" where FileName like "XP1_Leaders%";
+update IconTextureAtlases set IconsPerColumn = "5" where FileName like "XP2_Leaders%";
+update IconTextureAtlases set IconsPerColumn = "4" where FileName like "XP1_Units%";
+update IconTextureAtlases set IconsPerColumn = "6" where FileName like "XP2_Units%";
+update IconTextureAtlases set IconsPerRow = "4" where FileName like "XP1_Districts%";
+update IconTextureAtlases set IconsPerColumn = "1" where FileName like "XP1_Districts%";
+update IconTextureAtlases set IconsPerColumn = "4" where FileName like "XP2_DistrictBuildings%";
+update IconTextureAtlases set IconsPerColumn = "7" where FileName like "Civics%";
+update IconTextureAtlases set IconsPerColumn = "5" where FileName like "FontIconsXP1%";
+update IconTextureAtlases set IconsPerRow = "4" where FileName like "XP1_CivilopediaChapter%";
+update IconTextureAtlases set IconsPerRow = "4" where FileName like "XP1_Resources%";
+update IconTextureAtlases set IconsPerRow = "7" where FileName like "XP1_Governors%";
+update IconTextureAtlases set IconsPerRow = "1" where FileName like "XP2_Governors%";
+update IconTextureAtlases set IconsPerColumn = "5" where FileName like "XP2_Projects%";

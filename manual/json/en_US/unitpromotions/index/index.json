@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Unit Promotions",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Unit Promotions"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of unit promotions, need to be edited."
+        }
+    ]
+}

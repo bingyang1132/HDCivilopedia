@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Governments and Policies",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Governments and Policies"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of governments and policies, need to be edited."
+        }
+    ]
+}

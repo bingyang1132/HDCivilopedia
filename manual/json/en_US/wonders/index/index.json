@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Wonders",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Wonders"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of wonders, need to be edited."
+        }
+    ]
+}

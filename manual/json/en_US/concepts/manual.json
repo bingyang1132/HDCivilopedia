@@ -1,0 +1,18 @@
+{
+    "chapter" : "concepts",
+    "path" : "en_US/concepts",
+    "folders" : [
+        {
+            "name" : "", 
+            "path" : "index", 
+            "order" : -1, 
+            "hidden" : true,
+            "files" : [
+                {
+                    "name" : "Introduction",
+                    "path" : "index.json"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Governors",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Governors"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of governors, need to be edited."
+        }
+    ]
+}

@@ -1,0 +1,18 @@
+{
+    "language" : "zh_Hans",
+    "title" : "市政",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "市政"
+        },
+        {
+            "type" : "body",
+            "text" : "获得[ICON_CULTURE]文化值以获得新的市政，每个市政会解锁新的社会政策、政体、建筑、区域，或奇观。在市政树取得进步能有效推动您的文明发展。<br>市政树的设计旨在提供多样化的选择，以适应不同的游戏风格和策略。玩家可以根据自己的需求和目标选择合适的市政和政策来推动文明的发展。<br>下图为和而不同2.0测试版（2025年6月30日版）的市政树, 可能与最新版本有微小差别。"
+        },
+        {
+            "type" : "body",
+            "text" : "<div style=\"width:750px;overflow-x:scroll\"><img src=\"../../../images/civics.png\" height=500px></img></div>"
+        }
+    ]
+}

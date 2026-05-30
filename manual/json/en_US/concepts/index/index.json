@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Civilization 6 Harmony in Diversity Official Wiki",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Introduction"
+        },
+        {
+            "type" : "body",
+            "text" : "Harmony in Diversity is a comprehensive Civilization 6 mod. <br/><ul><li>You may follow our bilibili official account (<a href=\"https://space.bilibili.com/1824068156/\">文明6-和而不同-制作组</a>) for some introduction.</li><li>To follow on Steam: search \"Harmony in Diversity\" in Steam workshop.</li><li>For other ways of installation (such as on Epic), please refer to this <a href=\"https://www.bilibili.com/video/BV1j34y1y7Y6\">guide</a>.</li><li>The new domain of this site is <a href=\"https://civ6hd.com\">civ6hd.com</a>, the old one civ6hd.wiki will be abandoned in 2023.</li><li>The current version is 1.2.8, which is updated on 1st May 2022.</li><li>Until now, changelog is only provided in Chinese. Please switch language with the button on the right, open the tab labelled \"更新日志\" on the left, and use some translator to read them. Apologies for any inconvenience.</li></ul>"
+        }
+    ]
+}

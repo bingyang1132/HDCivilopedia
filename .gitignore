@@ -1,0 +1,29 @@
+# Logs
+*.log
+log/
+log_*.txt
+
+# Game input data / large binaries (kept on disk, not tracked)
+*.sqlite
+*.xlsx
+/backup/
+
+# Generated HTML at repo root
+/v*.html
+
+# Backup / copy dirs
+*- 副本/
+
+# Generated output
+/output/
+/output_android/
+/database/
+/json/
+/icons/
+
+# Build
+/target/
+/build/
+
+# Old git history backup
+/.git.old.bak/

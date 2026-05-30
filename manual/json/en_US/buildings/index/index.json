@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Buildings",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Buildings"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of buildings, need to be edited."
+        }
+    ]
+}

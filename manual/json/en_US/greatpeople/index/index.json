@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Great People",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Great People"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of great people, need to be edited."
+        }
+    ]
+}

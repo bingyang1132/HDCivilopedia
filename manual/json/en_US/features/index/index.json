@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Terrains and Features",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Terrains and Features"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of terrains and features, need to be edited."
+        }
+    ]
+}

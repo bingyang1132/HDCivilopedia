@@ -1,0 +1,111 @@
+{
+    "chapter" : "concepts",
+    "path" : "zh_Hans_CN/concepts", 
+    "folders" : [
+        {
+            "name" : "", 
+            "path" : "index", 
+            "order" : -1, 
+            "hidden" : true,
+            "files" : [
+                {
+                    "name" : "简介",
+                    "path" : "index.json"
+                }
+            ]
+        },
+        {
+            "name" : "更新日志", 
+            "path" : "updates", 
+            "order" : 0, 
+            "hidden" : false,
+            "files" : [
+                {
+                    "order" : 121,
+                    "name" : "v1.2.1",
+                    "path" : "v1.2.1.json"
+                },
+                {
+                    "order" : 122,
+                    "name" : "v1.2.2",
+                    "path" : "v1.2.2.json"
+                },
+                {
+                    "order" : 123,
+                    "name" : "v1.2.5",
+                    "path" : "v1.2.5.json"
+                },
+                {
+                    "order" : 124,
+                    "name" : "v1.2.8",
+                    "path" : "v1.2.8.json"
+                },
+                {
+                    "order" : 125,
+                    "name" : "v1.2.9",
+                    "path" : "v1.2.9.json"
+                },
+                {
+                    "order" : 125,
+                    "name" : "v1.2.10",
+                    "path" : "v1.2.10.json"
+                },
+                {
+                    "order" : 126,
+                    "name" : "v1.3.0",
+                    "path" : "v1.3.0.json"
+                },
+                {
+                    "order" : 127,
+                    "name" : "v1.3.1",
+                    "path" : "v1.3.1.json"
+                },
+                {
+                    "order" : 128,
+                    "name" : "v1.3.2",
+                    "path" : "v1.3.2.json"
+                },
+                {
+                    "order" : 129,
+                    "name" : "v1.3.3",
+                    "path" : "v1.3.3.json"
+                },
+                {
+                    "order" : 130,
+                    "name" : "v1.3.4",
+                    "path" : "v1.3.4.json"
+                },
+                {
+                    "order" : 131,
+                    "name" : "v1.3.5",
+                    "path" : "v1.3.5.json"
+                },
+                {
+                    "order" : 132,
+                    "name" : "v1.3.6",
+                    "path" : "v1.3.6.json"
+                },
+                {
+                    "order" : 133,
+                    "name" : "v1.3.7",
+                    "path" : "v1.3.7.json"
+                },
+                {
+                    "order" : 134,
+                    "name" : "v1.3.8",
+                    "path" : "v1.3.8.json"
+                },
+                {
+                    "order" : 135,
+                    "name" : "v1.3.9",
+                    "path" : "v1.3.9.json"
+                },
+                {
+                    "order" : 136,
+                    "name" : "v2.0",
+                    "path" : "v2.0.json"
+                }
+            ]
+        }
+    ]
+}

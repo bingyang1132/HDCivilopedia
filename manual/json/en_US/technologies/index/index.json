@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Technologies",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Technologies"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of technologies, need to be edited."
+        }
+    ]
+}

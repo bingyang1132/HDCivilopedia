@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Religions",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Religions"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of religions, need to be edited."
+        }
+    ]
+}

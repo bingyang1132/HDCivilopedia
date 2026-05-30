@@ -1,0 +1,46 @@
+{
+    "language" : "zh_Hans",
+    "title" : "文明6 和而不同 官方百科",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "介绍"
+        },
+        {
+            "type" : "body",
+            "text" : "和而不同是一个文明6大型模组. <br/><ul><li>您可以关注bilibili官方账号<a href=\"https://space.bilibili.com/1824068156/\">文明6-和而不同-制作组</a>来了解这个模组.</li><li>Steam订阅方式: 创意工坊选择“合集”后搜索“和而不同2.0”.</li><li>也可以参考<a href=\"https://www.bilibili.com/opus/1086148756176371730\">安装指南</a>.</li><li>本站点新域名为<a href=\"https://civ6hd.com\">civ6hd.com</a>, 旧域名civ6hd.wiki已弃用.</li><li>最新版本是2.0, 与Steam创意工坊版本相同。网页版百科也对应这一版本，包括所有必需内容和部分可选内容, 更新于2025年7月6日. 安卓版百科和最新测试版请加交流群获取.</li></ul>"
+        },
+        {
+            "type" : "header",
+            "text" : "QQ群"
+        },
+        {
+            "type" : "body",
+            "text" : "<ul><li>如果想游玩内测版、提出建议或参与开发, 欢迎加入交流群.</li><li>交流群1群1142970145</li><li>交流群2群954041014</li><li>交流群3群627267075</li><li>交流群4群160450686</li><li>交流群5群667460369</li><li>交流群6群421556141（请加这个）</li><li><strike>联机测试群632090529</strike> 和而不同不能联机.</li></ul>"
+        },
+        {
+            "type" : "header",
+            "text" : "bilibili专栏、视频链接"
+        },
+        {
+            "type" : "body",
+            "text" : "<ul><li><a href=\"https://www.bilibili.com/opus/1086148756176371730\">模组安装指南</a></li><li><a href=\"https://www.bilibili.com/read/readlist/rl962127\">和而不同2.0更新公告合集</a></li><li><a href=\"https://www.bilibili.com/video/BV1HT4y1f7nV\">宣传视频</a></li><li><a href=\"https://www.bilibili.com/read/cv14930076\">常见问题解答FAQ</a></li></ul>"
+        },
+        {
+            "type" : "header",
+            "text" : "bilibili制作组成员链接"
+        },
+        {
+            "type" : "body",
+            "text" : "<ul><li>前主创人 <a href=\"https://space.bilibili.com/385456816/\">_DeepLogic_</a></li><li>前主创人&当前更新主要作者 <a href=\"https://space.bilibili.com/326216134/\">小灰灰丶不吃羊</a></li><li>前主策划 <a href=\"https://space.bilibili.com/327308862/\">顾问</a></li><li>前主策划 <a href=\"https://space.bilibili.com/352354302/\">亚瑟</a></li><li>主程序（本百科制作者） <a href=\"https://space.bilibili.com/28009034/\">笑笑</a><li>百科维护 <a href=\"https://space.bilibili.com/37427227/\">云入岚</a></ul></li><ul>以下是活跃的测试组成员，他们会在bilibili发布内测版视频，欢迎关注<strike>以获得新版本偷跑</strike></li><li><a href=\"https://space.bilibili.com/542430892/\">利牙菠萝</a></li><li><a href=\"https://space.bilibili.com/477858411/\">不超模大庄园</a></li><li><a href=\"https://space.bilibili.com/23262558/\">美短都是蒲公英</a></li><li><a href=\"https://space.bilibili.com/194428086/\">zzyyyy001</a></li><li><a href=\"https://space.bilibili.com/421556141/\">微风你别跑</a></li><li><a href=\"https://space.bilibili.com/306177340/\">竹叶青</a></li><li><a href=\"https://space.bilibili.com/397305204/\">陵夏唐</a></li><li><a href=\"https://space.bilibili.com/35069927/\">又Crystal_Passion</a></li><li><a href=\"https://space.bilibili.com/350600579/\">wlhxzwa</a></li><li><a href=\"https://space.bilibili.com/33936274/\">休谟</a></li><li><a href=\"https://space.bilibili.com/230497932/\">爻异</a></li></us>"
+        },
+        {
+            "type" : "header",
+            "text" : "下载百科"
+        },
+        {
+            "type" : "body",
+            "text" : "您可以下载本百科, 在本地查看以加快加载速度. 使用离线百科请记得及时更新.<br/><ul><li><a href=\"https:civ6hd.com/downloads/civ6hdwiki.zip\">网页版</a>. 下载后解压, 双击index.html即可打开百科.</li><li><a href=\"https:civ6hd.com/downloads/civ6hdwiki.apk\">安卓版</a>. 仍处于测试阶段, 如遇到任何问题请加交流群联系制作者.</li></ul>"
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Resources",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Resources"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of resources, need to be edited."
+        }
+    ]
+}

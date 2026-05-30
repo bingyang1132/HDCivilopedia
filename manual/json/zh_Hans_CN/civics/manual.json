@@ -1,0 +1,16 @@
+{
+    "folders" : [
+        {
+            "name" : "", 
+            "path" : "index", 
+            "order" : -1, 
+            "hidden" : true,
+            "files" : [
+                {
+                    "name" : "简介",
+                    "path" : "index.json"
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "City States",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "City States"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of city states, need to be edited."
+        }
+    ]
+}

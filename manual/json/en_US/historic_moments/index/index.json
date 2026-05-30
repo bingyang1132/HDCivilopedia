@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Projects",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Projects"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of projects, need to be edited."
+        }
+    ]
+}

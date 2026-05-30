@@ -1,0 +1,14 @@
+{
+    "language" : "en_US",
+    "title" : "Civics",
+    "leftColumnItems" : [
+        {
+            "type" : "header",
+            "text" : "Civics"
+        },
+        {
+            "type" : "body",
+            "text" : "This is the introduction page of civics, need to be edited."
+        }
+    ]
+}

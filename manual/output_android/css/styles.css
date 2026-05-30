@@ -1,0 +1,460 @@
+.tabLedge {
+  width: 1028px;
+  height: 61px;
+  background-image: url('composite_tabledge2.png');
+  background-size: cover;
+}
+
+.list {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  margin-top: -54px;
+}
+
+.itemNormal {
+  position: relative;
+  margin-top: 10px;
+  width: 51px;
+  height: 51px;
+  text-align: center;
+  background-size: cover;
+  background-image: url('launchbar_hook_button.png');
+}
+
+.itemSelected {
+  position: relative;
+  margin-top: 10px;
+  width: 51px;
+  height: 51px;
+  text-align: center;
+  background-size: cover;
+  background-image: url('launchbar_hook_button.png');
+  background-position: 0px -100px;
+}
+
+.itemNormal:hover {
+  background-image: url('launchbar_hook_button.png');
+  background-position: 0px -51px;
+}
+
+.selectedArrow {
+  text-align: center;
+  position: absolute;
+  top: -12px;
+  left: -8.5px;
+}
+
+.iconOffset {
+  padding-top: 8px;
+}
+
+.appBackground {
+  background-image: url('parchment_patternbright.png');
+  background-size: 256px 256px;
+  background-repeat: repeat;
+  display: flex;
+  min-width: 1300px;
+  min-height: 100vh;
+  padding: 40px 0px;
+}
+
+.appBackground_android {
+  background-image: url('parchment_patternbright.png');
+  background-size: 256px 256px;
+  background-repeat: repeat;
+  display: flex;
+  min-height: 100vh;
+  padding: 40px 0px;
+  overflow-x:scroll;
+}
+
+.contentWithSideBar {
+  flex: 1;
+  justify-content: center;
+  display: flex;
+}
+
+.appContent {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  flex: 1;
+}
+
+.pageList {
+  margin-bottom: 0px;
+  width: 250px;
+  max-height: 2000px;
+  overflow-y: auto;
+}
+
+.pageTab {
+  border: 12px solid;
+  border-image: url('controls_buttoncontrol_brown_normal.png') 33 fill;
+  border-image-repeat: stretch;
+  height: 8px;
+  display: flex;
+  align-items: center;
+  margin: 0 5px;
+  padding: 0;
+}
+
+.pageTabGroup {
+  width: 100%;
+  border: 14px solid;
+  border-image: url('controls_optionframe.png') 39 48 39 48 fill;
+  border-image-repeat: stretch;
+  height: 8px;
+  display: flex;
+  align-items: center;
+  margin: 0 -12px;
+}
+
+.pageTab:not(.page-tab-selected):hover {
+  border-image-source: url('controls_buttoncontrol_brown_hover.png');
+}
+
+.pageTabSelected {
+  border: 12px solid;
+  border-image: url('controls_buttoncontrol_brown_normal.png') 33 fill;
+  border-image-repeat: stretch;
+  height: 8px;
+  display: flex;
+  align-items: center;
+  margin: 0 5px;
+  padding: 0;
+  border-image-source: url('controls_buttoncontrol_brown_selected.png');
+}
+
+.pageTabGroupText {
+  margin-left: -2px;
+  color: rgb(181, 175, 162);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pageTabText {
+  padding: 0;
+  margin: 0;
+  color: rgb(181, 175, 162);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pageTabExpandButton {
+  background-image: url('controls_expandbutton.png');
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  margin-right: -8px;
+  background-size: cover;
+}
+
+.pageTabExpandButtonSelected {
+  background-image: url('controls_expandbutton.png');
+  width: 22px;
+  height: 22px;
+  margin-left: auto;
+  margin-right: -8px;
+  background-size: cover;
+  background-position: 0 22px;
+}
+
+.page {
+  display: flex;
+  flex: 1;
+  margin-top: -10px;
+  background-image: url('parchment_patternbright.png');
+  background-size: 256px 256px;
+  background-repeat: repeat;
+}
+
+.pageFrame {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  margin: 20px 10px 20px 10px;
+  border: 17px solid;
+  border-image: url('pageframe.png') 48 fill;
+  border-image-repeat: stretch;
+}
+
+.pageHeaderContainer {
+  width: 100%;
+  position: relative;
+  margin-top: -10px;
+  height: 58px;
+}
+
+.pageHeaderText {
+  color: rgb(27, 27, 27);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  font-weight: bold;
+  font-size: 18pt;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pageFooter {
+  margin-top: 15px;
+}
+
+.pageFooterImage {
+  display: flex;
+  justify-content: center;
+}
+
+.pageFooterDivider {
+  margin-top: -5px;
+  height: 2px;
+  border-style: solid;
+  border-width: 3px 25px;
+  border-image: url('div2.png') 9 75 9 75 fill;
+  border-image-repeat: stretch;
+}
+
+.pageContent {
+  flex: 1;
+  display: flex;
+  min-height: 600px;
+}
+
+.pageLeftColumn {
+  flex: 1;
+}
+
+.pageRightColumn {
+  width: 300px;
+  margin-left: 20px;
+  margin-top: 10px;
+}
+
+.leftColumnItem {
+  margin-top: 15px;
+}
+
+.rightColumnItem {
+  margin-bottom: 20px;
+}
+
+.chapterHeaderContainer {
+  margin-left: -20px;
+  margin-right: -20px;
+  border-width: 21px 64px;
+  border-style: solid;
+  border-image: url('civilopedia_topicheader.png') 60 189 60 189 fill; 
+  border-image-repeat: stretch;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.chapterHeaderTitle {
+  font-weight: bold;
+  font-size: 18px;
+  text-align: center;
+  margin-top: -20px;
+  margin-bottom: -20px;
+}
+
+.headerBodyHeaderText {
+  margin-top: 8px;
+  margin-bottom: 0px;
+  font-size: 18px;
+}
+
+.headerBodyHeaderBody {
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 5px;
+}
+
+.fontIcon {
+  vertical-align: middle;
+  margin-bottom: 4px;
+  width: 22px;
+  height: 22px;
+}
+
+.portraitSquareMargin {
+  margin-left: -20px;
+  margin-right: -20px;
+  margin-top: -10px;
+  position: relative;
+}
+
+.portraitContent {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  justify-content: center;
+  display: flex;
+}
+
+.statBoxFrame {
+  display: flex;
+  flex-direction: column;
+  border: 17px solid;
+  border-image: url('pageframe.png') 48 fill;
+  border-image-repeat: stretch;
+}
+
+.statBoxTitle {
+  margin-bottom: 0;
+  margin-top: -8px;
+  font-size: 20px;
+  text-align: center;
+}
+
+.statBoxComponent {
+  margin-top: 10px;
+}
+
+.separator {
+  height: 2px;
+  background-color: rgba(0, 20, 20, 0.27);
+}
+
+.statBoxHeaderText {
+  color: rgb(27, 27, 27);
+  font-size: 18px;
+}
+
+.iconLabelContainer {
+  height: 50px;
+  display: flex;
+  align-items: center;
+}
+
+.iconLabelImage {
+  height: 100%;
+  width: 50px;
+  justify-content: center;
+}
+
+.iconLabelNumber {
+  font-size: 30px;
+  width: 50px;
+  text-align: center;
+  color: black;
+}
+
+.iconLabelCaption {
+  font-size: 16px;
+  margin-left: 5px;
+  max-width: 195px;
+  word-wrap: break-word;
+  color: black;
+}
+
+.statBoxLabel {
+  font-size: 16px;
+  color: #1b1b1b;
+}
+
+.app {
+  justify-content: center;
+  display: flex;
+  width: 950px;
+  border: 59px solid;
+  border-image: url('controls_windowtitle.png') 165 fill;
+  border-image-repeat: stretch;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin: -18px -52px -50px -55px;
+  background-color: rgb(56, 16, 19);
+}
+
+.body_android {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  background-color: rgb(56, 16, 19);
+}
+
+.appHeader {
+  margin-top: -12px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.enhancedToolTip {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  width: 620px;
+  border: 26px solid;
+  border-image: url('Controls_EnhancedToolTip.png') 26 fill;
+  border-image-repeat: stretch
+}
+
+.doubleItem {
+  display: flex;
+  justify-content: space-between;
+}
+
+.singleItem {
+  display: flex;
+  justify-content: space-around;
+}
+
+.buttonCompleted {
+  width: 220px;
+  height: 100px;
+  border: 25px solid;
+  border-image: url('Promotion_ButtonCompleted.png') 30 fill;
+  border-image-repeat: stretch
+}
+
+.sidebarContainer {
+  width: 180px;
+  padding-left: 10px;
+}
+
+.sidebarText {
+  color: black;
+  font-size: 14px;
+  font-weight: 500;
+} 
+
+.governorsPromotionBox {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  width: 620px;
+  border: 52px solid;
+  border-image: url('Governors_PromotionBox.png') 70 fill;
+  border-image-repeat: stretch
+}
+
+.baseAbility {
+  width: 428px;
+  height: 28px;
+  border: 28px solid;
+  border-image: url('Governors_BaseAbilityBox.png') 28 fill;
+  border-image-repeat: stretch
+}
+
+.governorsPromotionButton {
+  width: 261px;
+  height: 181px;
+  background-image: url('Governors_Promotion_Button.png');
+  background-size: 100% 100%;
+  background-repeat: stretch;
+}
