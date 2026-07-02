@@ -2607,6 +2607,18 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "Search": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "搜索…";
+                    }
+                    case "en_US": {
+                        return "Search…";
+                    }
+                }
+                break;
+            }
             case "": {
                 switch (language) {
                     case "zh_Hans":

@@ -18,6 +18,7 @@ import javax.xml.transform.stream.StreamResult;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -728,6 +729,7 @@ public class Page {
 
         Element appHeader = getHeaderElement(document, index.getString("path"));
         appbody.appendChild(appHeader);
+        appHeader.appendChild(getSearchBox(document, page.getString("language")));
 
         Element appContent = document.createElement("div");
         appbody.appendChild(appContent);
@@ -862,7 +864,9 @@ public class Page {
                 option.setAttribute("selected", "true");
             }
         }
-        
+
+        appendSearchScripts(document, body);
+
         return document;
     }
 
@@ -916,18 +920,20 @@ public class Page {
         appBackground.appendChild(appbody);
         appbody.setAttribute("class", "body_android");
         
+        appbody.appendChild(getSearchBox(document, page.getString("language")));
+
         Element appContent = document.createElement("div");
         appbody.appendChild(appContent);
         appContent.setAttribute("class", "appContent");
-        
+
         Element pageMain = document.createElement("div");
         appContent.appendChild(pageMain);
         pageMain.setAttribute("class", "page");
-        
+
         Element pageFrame = document.createElement("div");
         pageMain.appendChild(pageFrame);
         pageFrame.setAttribute("class", "pageFrame");
-        
+
         Element pageHeaderContainer = document.createElement("div");
         pageFrame.appendChild(pageHeaderContainer);
         pageHeaderContainer.setAttribute("class", "pageHeaderContainer");
@@ -1005,6 +1011,8 @@ public class Page {
         Element pageFooterDivider = document.createElement("div");
         pageFooter.appendChild(pageFooterDivider);
         pageFooterDivider.setAttribute("class", "pageFooterDivider");
+
+        appendSearchScripts(document, body);
 
         return document;
     }
@@ -1132,6 +1140,135 @@ public class Page {
         writeDocumentToFile(document, target);
     }
 
+    // ---- client-side search -------------------------------------------------
+
+    /** Search box UI (input + results dropdown). Shared by web and android pages. */
+    public static Element getSearchBox (Document document, String language) {
+        Element container = document.createElement("div");
+        container.setAttribute("class", "pediaSearch");
+
+        Element input = document.createElement("input");
+        container.appendChild(input);
+        input.setAttribute("id", "pediaSearchInput");
+        input.setAttribute("type", "text");
+        input.setAttribute("autocomplete", "off");
+        // some generated pages (android chapter TOCs) carry no language field
+        String lang = (language == null || language.isEmpty()) ? "en_US" : language;
+        input.setAttribute("placeholder", Tools.getControlText("Search", lang));
+
+        Element results = document.createElement("div");
+        container.appendChild(results);
+        results.setAttribute("id", "pediaSearchResults");
+        results.setAttribute("class", "pediaSearchResults");
+        // a text node keeps the XML transformer from self-closing the empty div
+        results.setTextContent(" ");
+
+        return container;
+    }
+
+    /** Appends the per-language data file and shared behaviour script to a page body. */
+    public static void appendSearchScripts (Document document, Element body) {
+        // "../../" reaches the language dir (output/{lang}/) from every page (all are 3 dirs deep)
+        Element data = document.createElement("script");
+        body.appendChild(data);
+        data.setAttribute("src", "../../search-data.js");
+        data.setTextContent(" "); // force a closing tag; empty <script src/> breaks HTML parsing
+
+        Element behaviour = document.createElement("script");
+        body.appendChild(behaviour);
+        behaviour.setAttribute("src", Tools.LINK_URL + "/search.js");
+        behaviour.setTextContent(" ");
+    }
+
+    /**
+     * Builds output/{language}/search-data.js (and the android copy) from the staged
+     * temp/{language}/{chapter} index files. Mirrors convertChapter's index merge so the
+     * index lists exactly the pages that get generated. Each entry: t=title, u=link,
+     * i=icon (optional), c=localized chapter name.
+     */
+    public static void buildSearchIndex (String language) throws Exception {
+        JSONArray searchIndex = new JSONArray();
+        for (String chapter : HEADERS) {
+            File chapterFolder = new File("temp/" + language + "/" + chapter);
+            if (!chapterFolder.exists()) {
+                continue;
+            }
+            JSONObject index = new JSONObject();
+            index.put("folders", new JSONArray());
+            File[] indexFiles = chapterFolder.listFiles();
+            if (indexFiles == null) {
+                continue;
+            }
+            for (File indexFile : indexFiles) {
+                if (indexFile.isFile() && indexFile.getName().endsWith(".json")) {
+                    InputStream in = new FileInputStream(indexFile);
+                    byte[] buf = new byte[in.available()];
+                    in.read(buf);
+                    in.close();
+                    JSONObject extra = JSON.parseObject(new String(buf, "UTF-8"));
+                    addJson(index, extra, true);
+                }
+            }
+            String indexPath = index.getString("path");
+            if (indexPath == null) {
+                indexPath = language + "/" + chapter;
+            }
+            String category = Tools.getControlText(chapter, language);
+            JSONArray folders = index.getJSONArray("folders");
+            if (folders == null) {
+                continue;
+            }
+            for (Object f : folders) {
+                JSONObject folder = (JSONObject) f;
+                String folderPath = folder.getString("path");
+                JSONArray files = folder.getJSONArray("files");
+                if (files == null) {
+                    continue;
+                }
+                for (Object fi : files) {
+                    JSONObject file = (JSONObject) fi;
+                    String name = file.getString("name");
+                    if (name == null || name.isEmpty()) {
+                        continue;
+                    }
+                    // strip [ICON_*]/[COLOR]/... markup tokens so titles read cleanly and
+                    // matching runs against visible text only; keep raw name if nothing remains
+                    String title = name.replaceAll("\\[[^\\]]*\\]", "").replaceAll("\\s+", " ").trim();
+                    if (title.isEmpty()) {
+                        title = name;
+                    }
+                    JSONObject entry = new JSONObject(true);
+                    entry.put("t", title);
+                    entry.put("c", category);
+                    JSONObject iconlabel = file.getJSONObject("iconlabel");
+                    if (iconlabel != null) {
+                        entry.put("u", iconlabel.getString("link"));
+                        entry.put("i", iconlabel.getString("src"));
+                    } else {
+                        String subPath = file.getString("path");
+                        entry.put("u", Tools.LINK_URL + "/" + indexPath + "/" + folderPath + "/" + subPath.replace(".json", ".html"));
+                    }
+                    searchIndex.add(entry);
+                }
+            }
+        }
+        // BrowserCompatible escapes non-ASCII to ASCII unicode escapes, so the file is charset-independent
+        String js = "window.SEARCH_INDEX=" + JSON.toJSONString(searchIndex, SerializerFeature.BrowserCompatible) + ";";
+        writeTextToFile(js, new File("output/" + language + "/search-data.js"));
+        writeTextToFile(js, new File("output_android/" + language + "/search-data.js"));
+    }
+
+    public static void writeTextToFile (String text, File target) throws Exception {
+        target.getParentFile().mkdirs();
+        if (target.exists()) {
+            target.delete();
+        }
+        OutputStream out = new FileOutputStream(target);
+        out.write(text.getBytes("UTF-8"));
+        out.flush();
+        out.close();
+    }
+
     public static void convertAll() throws Exception {
         copyFiles(new File("json"), new File("temp"));
         copyFiles(new File("manual/json"), new File("temp"));
@@ -1156,6 +1293,8 @@ public class Page {
             Document document = convertAndroidSingleHTML(tocPage);
             File target = new File("output_android/" + language + "/index/index/toc.html");
             writeDocumentToFile(document, target);
+
+            buildSearchIndex(language);
         }
         deleteFiles(new File("temp"));
         copyFiles(new File("manual/output"), new File("output"));

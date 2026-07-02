@@ -458,3 +458,75 @@
   background-size: 100% 100%;
   background-repeat: stretch;
 }
+/* ---- pedia search ---- */
+.pediaSearch {
+  position: relative;
+  margin: 6px 0 4px 0;
+  width: 320px;
+  max-width: 90%;
+  z-index: 50;
+}
+
+#pediaSearchInput {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  font-size: 14px;
+  color: #1b1b1b;
+  background-color: rgba(233, 224, 200, 0.95);
+  border: 2px solid #6b5836;
+  border-radius: 3px;
+  outline: none;
+}
+
+#pediaSearchInput::placeholder {
+  color: #6b5836;
+}
+
+.pediaSearchResults {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  background-color: rgba(233, 224, 200, 0.98);
+  border: 2px solid #6b5836;
+  border-top: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+}
+
+.pediaSearchItem {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  text-decoration: none;
+  color: #1b1b1b;
+  border-bottom: 1px solid rgba(107, 88, 54, 0.25);
+}
+
+.pediaSearchItem:hover,
+.pediaSearchItemActive {
+  background-color: rgba(107, 88, 54, 0.25);
+}
+
+.pediaSearchIcon {
+  width: 28px;
+  height: 28px;
+  margin-right: 8px;
+  flex: 0 0 auto;
+}
+
+.pediaSearchTitle {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.pediaSearchCat {
+  margin-left: auto;
+  padding-left: 10px;
+  font-size: 11px;
+  color: #6b5836;
+  white-space: nowrap;
+}
