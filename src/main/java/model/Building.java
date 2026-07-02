@@ -261,10 +261,14 @@ public class Building extends UnlockableWithIcon {
         }
 
         if (replace != null) {
-            traitContents.add(Tools.getSeparator());
-            traitContents.add(Tools.getHeader(Tools.getControlText("Replaces", language)));
+            // the replaced building may be internal-only (e.g. the XHH_*_STALL
+            // buildings replace *_INTERNAL bases), in which case it is not in the map
             Building bui = buildings.get(replace);
-            traitContents.add(bui.getIconLabel(language));
+            if (bui != null) {
+                traitContents.add(Tools.getSeparator());
+                traitContents.add(Tools.getHeader(Tools.getControlText("Replaces", language)));
+                traitContents.add(bui.getIconLabel(language));
+            }
         } else {
             boolean hasReplace = false;
             for (Entry<String, Building> entry : buildings.entrySet()) {

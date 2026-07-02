@@ -5,8 +5,10 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
@@ -21,6 +23,7 @@ public class ResourceCategory extends Writable {
 	public String industryEffect;
 	public String corporationEffect;
 	public List<String> resources = new ArrayList<>();
+	public Map<String, Integer> productYields = new LinkedHashMap<>();
 
     public ResourceCategory (String tag) {
         super(tag);
@@ -32,21 +35,36 @@ public class ResourceCategory extends Writable {
         Statement gameplay = null;
         try {
             gameplay = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE).createStatement();
-    
-            // load resource categoty list
-            ResultSet r1 = gameplay.executeQuery("select * from HDMonopolyResourceEffects where Category not in ('KHALIFA', 'PORCELAIN', 'AIRPORT_DRINK', 'AIRPORT_USING', 'AIRPORT_FOOD');");
+
+            // load the monopoly category list. Only categories that define both an
+            // industry and a corporation effect are real monopoly categories; the
+            // product-only categories (BAVARIA_*, TOYS, COSMETICS, ...) carry no
+            // effect and are skipped.
+            ResultSet r1 = gameplay.executeQuery("select * from HD_Monopoly_Categories where IndustryEffect is not null and IndustryEffect <> '' and CorporationEffect is not null and CorporationEffect <> '';");
             while (r1.next()) {
                 String tag = r1.getString("Category");
-				ResourceCategory category;
-				if (categories.containsKey(tag)) {
-					category = categories.get(tag);
-				} else {
-					category = new ResourceCategory(tag);
-					category.name = "LOC_HD_PEDIA_CATEGORY_" + tag + "_NAME";
-					category.industryEffect = "LOC_" + r1.getString("IndustryEffect") + "_DESCRIPTION";
-					category.corporationEffect = "LOC_" + r1.getString("CorporationEffect") + "_DESCRIPTION";
-				}
-				category.resources.add(r1.getString("ResourceType"));
+                ResourceCategory category = new ResourceCategory(tag);
+                category.name = "LOC_RESOURCE_CLASSIFICATION_HD_" + tag + "_NAME";
+                category.industryEffect = "LOC_" + r1.getString("IndustryEffect") + "_DESCRIPTION";
+                category.corporationEffect = "LOC_" + r1.getString("CorporationEffect") + "_DESCRIPTION";
+            }
+
+            // resources belonging to each category (many-to-many)
+            ResultSet r2 = gameplay.executeQuery("select * from HD_Monopoly_Resource_Categories;");
+            while (r2.next()) {
+                ResourceCategory category = categories.get(r2.getString("Category"));
+                if (category != null) {
+                    category.resources.add(r2.getString("ResourceType"));
+                }
+            }
+
+            // product yields granted by each category's products
+            ResultSet r3 = gameplay.executeQuery("select * from HD_ProductYields;");
+            while (r3.next()) {
+                ResourceCategory category = categories.get(r3.getString("Category"));
+                if (category != null) {
+                    category.productYields.put(r3.getString("YieldType"), r3.getInt("YieldChange"));
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -73,19 +91,26 @@ public class ResourceCategory extends Writable {
         object.put("leftColumnItems", leftColumnItems);
 
         JSONArray rightColumnItems = new JSONArray();
-        JSONArray contents = new JSONArray();
-        rightColumnItems.add(Tools.getStatbox(Tools.getControlText("resources", language), contents));
-        object.put("rightColumnItems", rightColumnItems);
 
+        if (!productYields.isEmpty()) {
+            JSONArray yieldContents = new JSONArray();
+            yieldContents.add(Tools.getSeparator());
+            for (Entry<String, Integer> entry : productYields.entrySet()) {
+                yieldContents.add(Tools.getLabel(Tools.signed(entry.getValue()) + Tools.getYield(entry.getKey(), language)));
+            }
+            rightColumnItems.add(Tools.getStatbox(Tools.getControlText("ProductYields", language), yieldContents));
+        }
+
+        JSONArray contents = new JSONArray();
         contents.add(Tools.getSeparator());
 		for (String resource : resources) {
 			Resource resourceObject = Resource.resources.get(resource);
 			if (resourceObject != null) {
 				contents.add(resourceObject.getIconLabel(language));
-			} else {
-				System.out.println(resource);
 			}
 		}
+        rightColumnItems.add(Tools.getStatbox(Tools.getControlText("resources", language), contents));
+        object.put("rightColumnItems", rightColumnItems);
 
         return object;
     }

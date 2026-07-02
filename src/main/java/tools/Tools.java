@@ -2595,6 +2595,18 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "ProductYields": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "产品产出";
+                    }
+                    case "en_US": {
+                        return "Product Yields";
+                    }
+                }
+                break;
+            }
             case "": {
                 switch (language) {
                     case "zh_Hans":

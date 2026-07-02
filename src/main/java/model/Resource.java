@@ -27,7 +27,7 @@ public class Resource extends WritableWithIcon {
 
     public int improvedExtractionRate;
     public String harvestPrereqTech;
-	public String category;
+	public List<String> categories = new ArrayList<>();
 
     public Map<String, Integer> yields = new HashMap<>();
     public Map<String, Integer> harvestYields = new HashMap<>();
@@ -99,10 +99,10 @@ public class Resource extends WritableWithIcon {
                     resource.improvedBy.add(r7.getString("ImprovementType"));
                 }
 
-                // load category
-                ResultSet r8 = gameplay.executeQuery("select * from HDMonopolyResourceEffects where ResourceType = \"" + tag + "\";");
-                if (r8.next()) {
-                    resource.category = r8.getString("Category");
+                // load categories (a resource can belong to several monopoly categories)
+                ResultSet r8 = gameplay.executeQuery("select * from HD_Monopoly_Resource_Categories where ResourceType = \"" + tag + "\";");
+                while (r8.next()) {
+                    resource.categories.add(r8.getString("Category"));
                 }
 
                 // load improvement icon
@@ -149,9 +149,11 @@ public class Resource extends WritableWithIcon {
             }
         }
 
-		if (category != null) {
-			ResourceCategory resourceCategory = ResourceCategory.categories.get(category);
-			traitContents.add(Tools.getLabel(resourceCategory.getLinkedTitle(language)));
+		for (String cat : categories) {
+			ResourceCategory resourceCategory = ResourceCategory.categories.get(cat);
+			if (resourceCategory != null) {
+				traitContents.add(Tools.getLabel(resourceCategory.getLinkedTitle(language)));
+			}
 		}
 
         if (improvedExtractionRate > 0) {
