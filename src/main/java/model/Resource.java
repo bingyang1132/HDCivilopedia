@@ -134,11 +134,34 @@ public class Resource extends WritableWithIcon {
         JSONArray leftColumnItems = new JSONArray();
         object.put("leftColumnItems", leftColumnItems);
 
+        // the industries & corporations this resource belongs to, with their effects
+        for (String cat : categories) {
+            ResourceCategory resourceCategory = ResourceCategory.categories.get(cat);
+            if (resourceCategory != null) {
+                leftColumnItems.add(Tools.getHeader(resourceCategory.getLinkedTitle(language)));
+                leftColumnItems.add(Tools.getBody(Tools.getControlText("IndustryEffect", language), Tools.getText(resourceCategory.industryEffect, language)));
+                leftColumnItems.add(Tools.getBody(Tools.getControlText("CorporationEffect", language), Tools.getText(resourceCategory.corporationEffect, language)));
+            }
+        }
+
         JSONArray rightColumnItems = new JSONArray();
         object.put("rightColumnItems", rightColumnItems);
 
         JSONArray traitContents = new JSONArray();
         rightColumnItems.add(Tools.getStatbox(Tools.getControlText("Traits", language), traitContents));
+
+        // industries & corporations shown in their own sidebar section (not under Traits)
+        JSONArray categoryContents = new JSONArray();
+        if (!categories.isEmpty()) {
+            categoryContents.add(Tools.getSeparator());
+            for (String cat : categories) {
+                ResourceCategory resourceCategory = ResourceCategory.categories.get(cat);
+                if (resourceCategory != null) {
+                    categoryContents.add(Tools.getLabel(resourceCategory.getLinkedTitle(language)));
+                }
+            }
+            rightColumnItems.add(Tools.getStatbox(Tools.getControlText("ResourceCategory", language), categoryContents));
+        }
 
         traitContents.add(Tools.getSeparator());
         traitContents.add(Tools.getLabel(getFolderName(language)));
@@ -148,13 +171,6 @@ public class Resource extends WritableWithIcon {
                 traitContents.add(Tools.getLabel("+" + entry.getValue() + Tools.getYield(entry.getKey(), language)));
             }
         }
-
-		for (String cat : categories) {
-			ResourceCategory resourceCategory = ResourceCategory.categories.get(cat);
-			if (resourceCategory != null) {
-				traitContents.add(Tools.getLabel(resourceCategory.getLinkedTitle(language)));
-			}
-		}
 
         if (improvedExtractionRate > 0) {
             traitContents.add(Tools.getLabel("+" + improvedExtractionRate + " [ICON_" + tag + "] " + getTitle(language)));
