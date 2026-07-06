@@ -73,7 +73,7 @@ public class WikiFetcher {
                     continue;
                 }
                 JSONObject result = (override != null && !override.isEmpty())
-                        ? summary(wl, override)
+                        ? summary(wl, titleFromOverride(override))
                         : fetch(wl, name);
                 sleep(120);
                 if (result == null) {
@@ -99,6 +99,28 @@ public class WikiFetcher {
             targets.add(w);
             n++;
         }
+    }
+
+    // an override value may be an exact article title or a full wiki URL; extract the title
+    static String titleFromOverride(String override) {
+        String s = override.trim();
+        int i = s.indexOf("/wiki/");
+        if (i >= 0) {
+            s = s.substring(i + "/wiki/".length());
+            int cut = s.indexOf('#');
+            if (cut >= 0) {
+                s = s.substring(0, cut);
+            }
+            cut = s.indexOf('?');
+            if (cut >= 0) {
+                s = s.substring(0, cut);
+            }
+            try {
+                s = java.net.URLDecoder.decode(s, "UTF-8");
+            } catch (Exception e) {
+            }
+        }
+        return s;
     }
 
     static String cleanName(String s) {
