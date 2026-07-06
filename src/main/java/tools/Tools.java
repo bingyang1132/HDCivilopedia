@@ -2735,6 +2735,22 @@ public class Tools implements Constants {
         return object;
     }
 
+    public static JSONObject getQuote(String text) {
+        JSONObject object = new JSONObject();
+        object.put("type", "quote");
+        object.put("text", text);
+        return object;
+    }
+
+    // wrap text in a coloured span; the raw HTML survives the page's final
+    // &lt;/&gt; un-escaping, so it renders in nav labels, statbox titles and labels
+    public static String colorText(String text, String hex) {
+        if (hex == null) {
+            return text;
+        }
+        return "<span style=\"color:" + hex + "\">" + text + "</span>";
+    }
+
     public static JSONObject getStatbox(String title, JSONArray contents) {
         JSONObject object = new JSONObject();
         object.put("type", "statbox");

@@ -21,6 +21,15 @@ public class Resource extends WritableWithIcon {
 
     public static final Map<String, Resource> resources = new HashMap<>();
 
+    // category label colour per resource class (see 需求5)
+    private static final Map<String, String> CLASS_COLORS = new HashMap<>();
+    static {
+        CLASS_COLORS.put("RESOURCECLASS_BONUS", "#AFD944");
+        CLASS_COLORS.put("RESOURCECLASS_LUXURY", "#D5CE8A");
+        CLASS_COLORS.put("RESOURCECLASS_STRATEGIC", "#4494A0");
+        CLASS_COLORS.put("RESOURCECLASS_ARTIFACT", "#B774B4");
+    }
+
     public String resourceClassType;
     public String prereqTech;
     public String prereqCivic;
@@ -160,7 +169,7 @@ public class Resource extends WritableWithIcon {
                     categoryContents.add(Tools.getLabel(resourceCategory.getLinkedTitle(language)));
                 }
             }
-            rightColumnItems.add(Tools.getStatbox(Tools.getControlText("ResourceCategory", language), categoryContents));
+            rightColumnItems.add(Tools.getStatbox(Tools.colorText(Tools.getControlText("ResourceCategory", language), "#5B9797"), categoryContents));
         }
 
         traitContents.add(Tools.getSeparator());
@@ -239,26 +248,67 @@ public class Resource extends WritableWithIcon {
         return "resources";
     }
 
-    @Override
-    public String getFolder() {
-        if (resourceClassType.equals("RESOURCECLASS_LUXURY")) {
-            for (String i : improvedBy) {
-                Improvement improvement = Improvement.improvements.get(i);
-                return improvement.getEnglishTitle();
+    // bonus & luxury resources are grouped by their improvement (matching the
+    // in-game pedia); strategic & artifact stay in a single per-class folder
+    private boolean splitByImprovement() {
+        return resourceClassType.equals("RESOURCECLASS_LUXURY")
+                || resourceClassType.equals("RESOURCECLASS_BONUS");
+    }
+
+    private String classKey() {
+        return resourceClassType.substring("RESOURCECLASS_".length(), resourceClassType.length()).toLowerCase();
+    }
+
+    private Improvement firstImprovement() {
+        for (String i : improvedBy) {
+            Improvement improvement = Improvement.improvements.get(i);
+            if (improvement != null) {
+                return improvement;
             }
         }
-        return resourceClassType.substring("RESOURCECLASS_".length(), resourceClassType.length()).toLowerCase();
+        return null;
+    }
+
+    // the class label ("加成资源"/"奢侈资源"/…) shown as the coloured category prefix
+    private String classLabel(String language) {
+        String core = resourceClassType.equals("RESOURCECLASS_LUXURY")
+                ? Tools.getControlText("Luxuries", language)
+                : Tools.getText("LOC_" + resourceClassType + "_NAME", language);
+        return (core + Tools.getControlText("Resources", language)).trim();
+    }
+
+    @Override
+    public String getFolder() {
+        if (splitByImprovement()) {
+            Improvement improvement = firstImprovement();
+            if (improvement != null) {
+                return classKey() + "_" + improvement.getEnglishTitle();
+            }
+        }
+        return classKey();
+    }
+
+    @Override
+    public int getFolderOrder() {
+        switch (resourceClassType) {
+            case "RESOURCECLASS_BONUS":     return 0;
+            case "RESOURCECLASS_LUXURY":    return 1000;
+            case "RESOURCECLASS_STRATEGIC": return 2000;
+            case "RESOURCECLASS_ARTIFACT":  return 3000;
+            default:                        return 4000;
+        }
     }
 
     @Override
     public String getFolderName(String language) {
-        if (resourceClassType.equals("RESOURCECLASS_LUXURY")) {
-            for (String i : improvedBy) {
-                Improvement improvement = Improvement.improvements.get(i);
-                return improvement.getTitle(language) + Tools.getControlText("Luxuries", language);
+        String colored = Tools.colorText(classLabel(language), CLASS_COLORS.get(resourceClassType));
+        if (splitByImprovement()) {
+            Improvement improvement = firstImprovement();
+            if (improvement != null) {
+                return colored + " " + improvement.getTitle(language);
             }
         }
-        return Tools.getText("LOC_" + resourceClassType + "_NAME", language) + Tools.getControlText("Resources", language);
+        return colored;
     }
 
     @Override

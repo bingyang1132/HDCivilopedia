@@ -44,7 +44,12 @@ public class Improvement extends UnlockableWithIcon {
     public List<String> validResouces = new ArrayList<>();
     
     public String belongs;
-    
+
+    // monopoly-style improvement classifications this improvement belongs to,
+    // ordered by SortIndex (see 需求1); CLASSIFICATION_ORDER holds type -> SortIndex
+    public List<String> classifications = new ArrayList<>();
+    private static final Map<String, Integer> CLASSIFICATION_ORDER = new HashMap<>();
+
     public Improvement (String tag) {
         super(tag);
         improvements.put(tag, this);
@@ -71,7 +76,13 @@ public class Improvement extends UnlockableWithIcon {
                 improvement.housing = ((double) r1.getInt("Housing")) / r1.getInt("TilesRequired");
                 improvement.appeal = r1.getInt("Appeal");
             }
-    
+
+            // classification display order (type -> SortIndex)
+            ResultSet rct = gameplay.executeQuery("select * from HD_ImprovementClassificationTypes;");
+            while (rct.next()) {
+                CLASSIFICATION_ORDER.put(rct.getString("ImprovementClassificationType"), rct.getInt("SortIndex"));
+            }
+
             // load other information
             for(Entry<String, Improvement> entry : improvements.entrySet()) {
                 String tag = entry.getKey();
@@ -111,6 +122,15 @@ public class Improvement extends UnlockableWithIcon {
                 while (r6.next()) {
                     improvement.validResouces.add(r6.getString("ResourceType"));
                 }
+
+                // load classifications (many-to-many), ordered by SortIndex
+                ResultSet r7 = gameplay.executeQuery("select * from HD_Improvement_Classification where ImprovementType = \"" + tag + "\";");
+                while (r7.next()) {
+                    improvement.classifications.add(r7.getString("ImprovementClassificationType"));
+                }
+                improvement.classifications.sort((a, b) -> Integer.compare(
+                        CLASSIFICATION_ORDER.getOrDefault(a, 999),
+                        CLASSIFICATION_ORDER.getOrDefault(b, 999)));
 
                 // load improvement icon
                 String iconString = "ICON_" + tag;
@@ -301,11 +321,34 @@ public class Improvement extends UnlockableWithIcon {
 
     @Override
     public String getFolder() {
-        if (belongs == null) {
-            return "common";
-        } else {
-            return "unique";
+        // canonical (single) page lives under the primary classification (lowest SortIndex)
+        if (!classifications.isEmpty()) {
+            return classifications.get(0);
         }
+        return belongs == null ? "common" : "unique";
+    }
+
+    @Override
+    public List<String> getFolders() {
+        // listed under every classification it belongs to (see 需求1)
+        if (classifications.isEmpty()) {
+            return java.util.Collections.singletonList(getFolder());
+        }
+        return classifications;
+    }
+
+    @Override
+    public int getFolderOrder(String folder) {
+        Integer idx = CLASSIFICATION_ORDER.get(folder);
+        return idx != null ? idx : 999;
+    }
+
+    @Override
+    public String getFolderName(String folder, String language) {
+        if (CLASSIFICATION_ORDER.containsKey(folder)) {
+            return Tools.getText("LOC_" + folder + "_NAME", language);
+        }
+        return getFolderName(language);
     }
 
     @Override

@@ -266,7 +266,12 @@ public class Page {
                 Element a = document.createElement("a");
                 expanded.appendChild(a);
                 a.setAttribute("style", "text-decoration:none;");
-                a.setAttribute("href", Tools.LINK_URL + "/" + index.getString("path") + "/" + folder.getString("path") + "/" + path.replace(".json", ".html"));
+                // reference cross-listings carry an explicit link to the canonical page
+                String link = file.getString("link");
+                if (link == null) {
+                    link = Tools.LINK_URL + "/" + index.getString("path") + "/" + folder.getString("path") + "/" + path.replace(".json", ".html");
+                }
+                a.setAttribute("href", link);
                 
                 Element tab = document.createElement("div");
                 a.appendChild(tab);
@@ -520,9 +525,21 @@ public class Page {
                 leftColumnItem.appendChild(center);
                 break;
             }
+            case "quote": {
+                Element quoteBox = document.createElement("div");
+                quoteBox.setAttribute("class", "pediaQuote");
+
+                Element quoteText = document.createElement("div");
+                quoteText.setAttribute("class", "pediaQuoteText");
+                quoteText.setTextContent(item.getString("text"));
+                quoteBox.appendChild(quoteText);
+
+                leftColumnItem.appendChild(quoteBox);
+                break;
+            }
         }
         return leftColumnItem;
-        
+
     }
 
     public static Element getPortrait (Document document, JSONObject item) {
@@ -1012,6 +1029,7 @@ public class Page {
         pageFooter.appendChild(pageFooterDivider);
         pageFooterDivider.setAttribute("class", "pageFooterDivider");
 
+        appendSidebar(document, body, page.getString("language"));
         appendSearchScripts(document, body);
 
         return document;
@@ -1074,6 +1092,11 @@ public class Page {
             JSONArray files = folder.getJSONArray("files");
             for (Object fi : Tools.sort(files)) {
                 JSONObject file = (JSONObject) fi;
+                // reference entries are cross-listings of a page that lives in another
+                // folder; the single canonical page is rendered from its own folder
+                if (file.getBooleanValue("reference")) {
+                    continue;
+                }
                 String subPath = file.getString("path");
                 File source = new File(sourceFolder, path + "/" + subPath);
                 File target = new File(targetFolder, path + "/" + subPath.replace(".json", ".html"));
@@ -1102,6 +1125,12 @@ public class Page {
 
         JSONObject tocPage = new JSONObject();
         tocPage.put("title", index.getString("name"));
+        // the chapter's index path is "{lang}/{chapter}"; carry the language so the
+        // sidebar / search box localise correctly on this TOC page
+        String tocIndexPath = index.getString("path");
+        if (tocIndexPath != null && tocIndexPath.contains("/")) {
+            tocPage.put("language", tocIndexPath.substring(0, tocIndexPath.indexOf("/")));
+        }
         JSONArray rightColumnItems = new JSONArray();
         tocPage.put("rightColumnItems", rightColumnItems);
 
@@ -1122,10 +1151,13 @@ public class Page {
                 JSONObject file = (JSONObject) fi;
                 String name = file.getString("name");
                 String subPath = file.getString("path");
-                File source = new File(sourceFolder, path + "/" + subPath);
-                File target = new File(targetFolder, path + "/" + subPath.replace(".json", ".html"));
-                convertAndroidSingleHTML(source, target);
-                
+                // reference entries link to the canonical page rendered under its own folder
+                if (!file.getBooleanValue("reference")) {
+                    File source = new File(sourceFolder, path + "/" + subPath);
+                    File target = new File(targetFolder, path + "/" + subPath.replace(".json", ".html"));
+                    convertAndroidSingleHTML(source, target);
+                }
+
                 JSONObject iconlabel = file.getJSONObject("iconlabel");
                 if (iconlabel != null) {
                     contents.add(iconlabel);
@@ -1164,6 +1196,63 @@ public class Page {
         results.setTextContent(" ");
 
         return container;
+    }
+
+    // floating hamburger button for the android pages (see 需求7)
+    public static Element getSidebarToggle (Document document) {
+        Element btn = document.createElement("div");
+        btn.setAttribute("id", "pediaSidebarToggle");
+        btn.setAttribute("class", "pediaSidebarToggle");
+        btn.setAttribute("onclick", "pediaToggleSidebar()");
+        for (int i = 0; i < 3; i++) {
+            Element bar = document.createElement("div");
+            btn.appendChild(bar);
+            bar.setAttribute("class", "pediaSidebarBar");
+        }
+        return btn;
+    }
+
+    // slide-in sidebar listing every top-level chapter, linking to its TOC
+    public static Element getSidebar (Document document, String language) {
+        String lang = (language == null || language.isEmpty()) ? "en_US" : language;
+        Element sidebar = document.createElement("div");
+        sidebar.setAttribute("id", "pediaSidebar");
+        sidebar.setAttribute("class", "pediaSidebar");
+        for (String chapter : HEADERS) {
+            Element a = document.createElement("a");
+            sidebar.appendChild(a);
+            a.setAttribute("class", "pediaSidebarItem");
+            // "../../" reaches the language dir from every android page (all 3 dirs deep)
+            a.setAttribute("href", "../../" + chapter + "/index/toc.html");
+
+            Element img = document.createElement("img");
+            a.appendChild(img);
+            img.setAttribute("class", "pediaSidebarIcon");
+            img.setAttribute("src", Tools.IMAGE_URL + "/ICON_CIVILOPEDIA_" + chapter.toUpperCase() + ".png");
+            img.setAttribute("alt", "");
+
+            Element span = document.createElement("span");
+            a.appendChild(span);
+            span.setTextContent(Tools.getControlText(chapter, lang));
+        }
+        return sidebar;
+    }
+
+    // appends the hamburger, sidebar, dimming overlay and toggle script to an android body
+    public static void appendSidebar (Document document, Element body, String language) {
+        body.appendChild(getSidebarToggle(document));
+        body.appendChild(getSidebar(document, language));
+
+        Element overlay = document.createElement("div");
+        body.appendChild(overlay);
+        overlay.setAttribute("id", "pediaSidebarOverlay");
+        overlay.setAttribute("class", "pediaSidebarOverlay");
+        overlay.setAttribute("onclick", "pediaToggleSidebar()");
+        overlay.setTextContent(" ");
+
+        Element script = document.createElement("script");
+        body.appendChild(script);
+        script.setTextContent("function pediaToggleSidebar(){var s=document.getElementById('pediaSidebar');var o=document.getElementById('pediaSidebarOverlay');var open=s.classList.toggle('open');o.style.display=open?'block':'none';}");
     }
 
     /** Appends the per-language data file and shared behaviour script to a page body. */
@@ -1227,6 +1316,10 @@ public class Page {
                 }
                 for (Object fi : files) {
                     JSONObject file = (JSONObject) fi;
+                    // skip reference cross-listings so each page is indexed once
+                    if (file.getBooleanValue("reference")) {
+                        continue;
+                    }
                     String name = file.getString("name");
                     if (name == null || name.isEmpty()) {
                         continue;
@@ -1278,6 +1371,7 @@ public class Page {
 
             JSONObject tocPage = new JSONObject();
             tocPage.put("title", Tools.getControlText("Civ6 HD Official Wiki", language));
+            tocPage.put("language", language);
             JSONArray rightColumnItems = new JSONArray();
             tocPage.put("rightColumnItems", rightColumnItems);
             JSONArray contents = new JSONArray();

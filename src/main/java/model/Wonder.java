@@ -4,9 +4,7 @@ import java.awt.image.BufferedImage;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -22,8 +20,8 @@ public class Wonder extends UnlockableWithIcon {
     public static final Map<String, Wonder> wonders = new HashMap<>();
 
     public String description;
-    public List<String> quotes = new ArrayList<>();
-    
+    public String quoteTag;
+
     public int cost;
     public int housing;
     public int entertainment;
@@ -66,20 +64,7 @@ public class Wonder extends UnlockableWithIcon {
                 wonder.housing = r1.getInt("Housing");
                 wonder.entertainment = r1.getInt("Entertainment");
                 wonder.regionalRange = r1.getInt("RegionalRange");
-
-                // 加载引言
-     
-                String quoteTag = "LOC_" + tag + "_QUOTE";
-                String hdQuoteTag = "LOC_" + tag + "_HD_QUOTE";
-                String quote = Tools.getText(hdQuoteTag, "zh_Hans_CN");
-                if (quote == null) quote = Tools.getText(quoteTag, "zh_Hans_CN");
-                if (quote == null) {
-                    quote = Tools.getText(quoteTag, "zh_Hans_CN");
-                }
-                if (quote != null) {
-                    wonder.quotes.add(quote);
-                }
-                
+                wonder.quoteTag = r1.getString("Quote");
             }
     
             // load other information, i.e. icons
@@ -140,11 +125,15 @@ public class Wonder extends UnlockableWithIcon {
             leftColumnItems.add(Tools.getBody(null, Tools.getTextWithAlt(description, language)));
         }
 
-        // 添加引言显示
-        if (!quotes.isEmpty()) {
-            leftColumnItems.add(Tools.getHeader(Tools.getControlText("Quotes", language)));
-            for (String quote : quotes) {
-                leftColumnItems.add(Tools.getBody(null, quote));
+        // 引言 (flavor quote): resolve the Quote LOC key from the Buildings table in the page
+        // language. The key often differs from the building tag (e.g. BUILDING_TEMPLE_ARTEMIS ->
+        // LOC_BUILDING_TEMPLE_OF_ARTEMIS_QUOTE), so we must read it rather than derive it. The
+        // author is embedded after a [NEWLINE].
+        if (quoteTag != null) {
+            String quote = Tools.getText(quoteTag, language);
+            if (quote != null) {
+                leftColumnItems.add(Tools.getHeader(Tools.getControlText("Quotes", language)));
+                leftColumnItems.add(Tools.getQuote(quote));
             }
         }
 
@@ -243,22 +232,54 @@ public class Wonder extends UnlockableWithIcon {
         }
     }
 
+    // derive the wonder's era from its prerequisite tech (preferred) or civic
+    private String getEra() {
+        if (prereqTech != null) {
+            Technology tech = Technology.technologies.get(prereqTech);
+            if (tech != null && tech.era != null) {
+                return tech.era;
+            }
+        }
+        if (prereqCivic != null) {
+            Civic civic = Civic.civics.get(prereqCivic);
+            if (civic != null && civic.era != null) {
+                return civic.era;
+            }
+        }
+        return null;
+    }
+
     @Override
     public String getFolder() {
         if (tag.startsWith("NAT_WONDER_CL_") || tag.startsWith("NAT_WON_CL_")) {
             return "nationalwonders";
-        } else {
-            return "wonders";
         }
+        String era = getEra();
+        return era != null ? era : "wonders";
+    }
+
+    @Override
+    public int getFolderOrder() {
+        if (tag.startsWith("NAT_WONDER_CL_") || tag.startsWith("NAT_WON_CL_")) {
+            return 1000;
+        }
+        String era = getEra();
+        if (era != null && Era.eras.get(era) != null) {
+            return Era.eras.get(era).chronologyIndex;
+        }
+        return 999;
     }
 
     @Override
     public String getFolderName(String language) {
-        if (tag.startsWith("NAT_WONDER_CL_")) {
+        if (tag.startsWith("NAT_WONDER_CL_") || tag.startsWith("NAT_WON_CL_")) {
             return Tools.getControlText("National Wonders", language);
-        } else {
-            return Tools.getControlText("Wonders", language);
         }
+        String era = getEra();
+        if (era != null) {
+            return Tools.getText("LOC_" + era + "_NAME", language);
+        }
+        return Tools.getControlText("Wonders", language);
     }
 
     @Override

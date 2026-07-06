@@ -530,3 +530,30 @@
   color: #6b5836;
   white-space: nowrap;
 }
+
+/* wonder / flavour quote box */
+.pediaQuote {
+  position: relative;
+  margin: 10px 0;
+  padding: 12px 18px 12px 42px;
+  background-color: rgba(107, 88, 54, 0.10);
+  border-left: 3px solid #6b5836;
+  border-radius: 2px;
+  font-style: italic;
+}
+
+.pediaQuote::before {
+  content: "\201C";
+  position: absolute;
+  left: 10px;
+  top: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 40px;
+  line-height: 1.2;
+  color: #6b5836;
+  opacity: 0.5;
+}
+
+.pediaQuoteText {
+  line-height: 1.7;
+}

@@ -2,6 +2,7 @@ package model.abstracts;
 
 import java.io.File;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import com.alibaba.fastjson.JSONArray;
@@ -68,6 +69,22 @@ public abstract class Writable {
         return 0;
     }
 
+    // An item lives as a single page in its canonical folder (getFolder()), but may be
+    // listed under several folders in the nav (see 需求1). By default it belongs only to
+    // its canonical folder; override getFolders() to list it under more. The extra folders
+    // get a "reference" entry that links back to the one canonical page.
+    public List<String> getFolders () {
+        return Collections.singletonList(getFolder());
+    }
+
+    public String getFolderName (String folder, String language) {
+        return getFolderName(language);
+    }
+
+    public int getFolderOrder (String folder) {
+        return getFolderOrder();
+    }
+
     static final List<String> STRINGS_TO_REMOVE = Arrays.asList(
         " [ICON_Damaged] ",
         " [ICON_Barbarian] ",
@@ -119,38 +136,51 @@ public abstract class Writable {
             }
             JSONArray folders = contents.getJSONArray("folders");
 
-            File subFolder = new File(chapterFolder, getFolder());
+            // write the page json once, into the canonical folder
+            String canonical = getFolder();
+            File subFolder = new File(chapterFolder, canonical);
             if (!subFolder.exists()) {
                 subFolder.mkdirs();
             }
-            JSONObject folderObject = null;
-            for (Object f : folders) {
-                JSONObject folder = (JSONObject) f;
-                if (getFolder().equals(folder.getString("path"))) {
-                    folderObject = folder;
-                    break;
-                }
-            }
-            if (folderObject == null) {
-                folderObject = new JSONObject();
-                folders.add(folderObject);
-                folderObject.put("path", getFolder());
-                folderObject.put("name", getFolderName(language));
-                folderObject.put("files", new JSONArray());
-                folderObject.put("order", getFolderOrder());
-            }
-
             File target = new File (subFolder, getEnglishTitle() + ".json");
-            // Tools.writeJson(toJson(language), target);
             Tools.writeJson((JSONObject) cleanJson(toJson(language)), target);
 
-            JSONObject fileObject = new JSONObject();
-            folderObject.getJSONArray("files").add(fileObject);
-            fileObject.put("name", getTitle(language));
-            fileObject.put("path", getEnglishTitle() + ".json");
-            fileObject.put("order", getOrder());
-            if (this instanceof WritableWithIcon) {
-                fileObject.put("iconlabel", ((WritableWithIcon) this).getIconLabel(language));
+            JSONObject iconlabel = (this instanceof WritableWithIcon)
+                    ? ((WritableWithIcon) this).getIconLabel(language)
+                    : null;
+
+            // list the item under every folder it belongs to; non-canonical folders get a
+            // reference entry pointing back to the single canonical page (see 需求1)
+            for (String folderPath : getFolders()) {
+                JSONObject folderObject = null;
+                for (Object f : folders) {
+                    JSONObject folder = (JSONObject) f;
+                    if (folderPath.equals(folder.getString("path"))) {
+                        folderObject = folder;
+                        break;
+                    }
+                }
+                if (folderObject == null) {
+                    folderObject = new JSONObject();
+                    folders.add(folderObject);
+                    folderObject.put("path", folderPath);
+                    folderObject.put("name", getFolderName(folderPath, language));
+                    folderObject.put("files", new JSONArray());
+                    folderObject.put("order", getFolderOrder(folderPath));
+                }
+
+                JSONObject fileObject = new JSONObject();
+                folderObject.getJSONArray("files").add(fileObject);
+                fileObject.put("name", getTitle(language));
+                fileObject.put("path", getEnglishTitle() + ".json");
+                fileObject.put("order", getOrder());
+                if (iconlabel != null) {
+                    fileObject.put("iconlabel", iconlabel);
+                }
+                if (!folderPath.equals(canonical)) {
+                    fileObject.put("reference", true);
+                    fileObject.put("link", getLink(language));
+                }
             }
 
             Tools.writeJson(contents, contentsFile);

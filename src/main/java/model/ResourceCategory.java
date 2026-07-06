@@ -131,8 +131,13 @@ public class ResourceCategory extends Writable {
     }
 
     @Override
+    public int getFolderOrder() {
+        return -100;
+    }
+
+    @Override
     public String getFolderName(String language) {
-        return Tools.getControlText("ResourceCategory", language);
+        return Tools.colorText(Tools.getControlText("ResourceCategory", language), "#5B9797");
     }
 
     @Override
