@@ -2766,12 +2766,13 @@ public class Tools implements Constants {
         return object;
     }
 
-    // the game's civilopedia HISTORY prose for a features-chapter entry (terrain / feature /
-    // natural wonder), joining its paragraphs; null when the entry has no history text
-    public static String getFeatureHistory(String tag, String language) {
+    // the game's civilopedia HISTORY prose for a pedia entry, joining its paragraphs; null when
+    // the entry has none. section is the civilopedia section id (FEATURES, GREATPEOPLE,
+    // CIVILIZATIONS, LEADERS, WONDERS, ...).
+    public static String getGameHistory(String section, String tag, String language) {
         StringBuilder sb = new StringBuilder();
         for (int i = 1; i <= 20; i++) {
-            String para = getText("LOC_PEDIA_FEATURES_PAGE_" + tag + "_CHAPTER_HISTORY_PARA_" + i, language);
+            String para = getText("LOC_PEDIA_" + section + "_PAGE_" + tag + "_CHAPTER_HISTORY_PARA_" + i, language);
             if (para == null) {
                 break;
             }
@@ -2781,6 +2782,20 @@ public class Tools implements Constants {
             sb.append(para);
         }
         return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    public static String getFeatureHistory(String tag, String language) {
+        return getGameHistory("FEATURES", tag, language);
+    }
+
+    // 历史背景 for an entity: the scraped Wikipedia text if present, otherwise the game's own
+    // civilopedia history for the given section (需求2 audit fallback). Null when neither exists.
+    public static String getHistory(String section, String tag, String language) {
+        String history = getWikiHistory(tag, language);
+        if (history == null) {
+            history = getGameHistory(section, tag, language);
+        }
+        return history;
     }
 
     // scraped wikipedia history for an entity (需求2), read from manual/wiki/{lang}/{tag}.json;

@@ -200,11 +200,11 @@ public class Civilization extends WritableWithIcon {
             }
         }
 
-        // 历史背景 from wikipedia (需求2)
-        String wikiHistory = Tools.getWikiHistory(tag, language);
-        if (wikiHistory != null) {
+        // 历史背景: wikipedia if fetched, else the game's own civilopedia history (需求2)
+        String history = Tools.getHistory("CIVILIZATIONS", tag, language);
+        if (history != null) {
             leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
-            leftColumnItems.add(Tools.getBody(null, wikiHistory));
+            leftColumnItems.add(Tools.getBody(null, history));
         }
 
         return object;

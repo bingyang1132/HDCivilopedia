@@ -243,11 +243,14 @@ public class GreatPerson extends WritableWithIcon {
             }
         }
 
-        // 历史背景 from wikipedia (需求2)
-        String wikiHistory = Tools.getWikiHistory(tag, language);
-        if (wikiHistory != null) {
-            leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
-            leftColumnItems.add(Tools.getBody(null, wikiHistory));
+        // 历史背景: wikipedia if fetched, else the game's own civilopedia history (需求2).
+        // 编撰官/法律讲述官 are generic mod great people — no history section (per request).
+        if (!cla.equals("GREAT_PERSON_CLASS_HD_CODIFIER") && !cla.equals("GREAT_PERSON_CLASS_SUK_LAWSPEAKER")) {
+            String history = Tools.getHistory("GREATPEOPLE", tag, language);
+            if (history != null) {
+                leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
+                leftColumnItems.add(Tools.getBody(null, history));
+            }
         }
 
         return object;

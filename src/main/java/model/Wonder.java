@@ -125,11 +125,11 @@ public class Wonder extends UnlockableWithIcon {
             leftColumnItems.add(Tools.getBody(null, Tools.getTextWithAlt(description, language)));
         }
 
-        // 历史背景 from wikipedia (需求2)
-        String wikiHistory = Tools.getWikiHistory(tag, language);
-        if (wikiHistory != null) {
+        // 历史背景: wikipedia if fetched, else the game's own civilopedia history (需求2)
+        String history = Tools.getHistory("WONDERS", tag, language);
+        if (history != null) {
             leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
-            leftColumnItems.add(Tools.getBody(null, wikiHistory));
+            leftColumnItems.add(Tools.getBody(null, history));
         }
 
         // 引言 (flavor quote): resolve the Quote LOC key from the Buildings table in the page

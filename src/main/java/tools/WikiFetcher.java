@@ -61,11 +61,20 @@ public class WikiFetcher {
             for (Writable w : targets) {
                 File out = new File("manual/wiki/" + language + "/" + w.tag + ".json");
                 String override = overrides.get(language + "\t" + w.tag);
+                // SKIP sentinel: drop any wiki file so the page falls back to game history
+                if (override != null && override.trim().equalsIgnoreCase("SKIP")) {
+                    if (out.exists()) {
+                        out.delete();
+                    }
+                    skip++;
+                    continue;
+                }
                 // already fetched and no correction pending -> skip (resumable)
                 if (out.exists() && override == null) {
                     skip++;
                     continue;
                 }
+                boolean longIntro = w instanceof Civilization;
                 String name = cleanName(w.getTitle(language));
                 if ((override == null || override.isEmpty()) && name.isEmpty()) {
                     failures.add(language + "\t" + w.tag + "\t(no name)");
@@ -73,8 +82,8 @@ public class WikiFetcher {
                     continue;
                 }
                 JSONObject result = (override != null && !override.isEmpty())
-                        ? summaryFromOverride(wl, override)
-                        : fetch(wl, name);
+                        ? resolveOverride(wl, override, longIntro)
+                        : autoFetch(wl, name, longIntro);
                 sleep(120);
                 if (result == null) {
                     failures.add(language + "\t" + w.tag + "\t" + (override != null && !override.isEmpty() ? override : name));
@@ -104,7 +113,7 @@ public class WikiFetcher {
     // an override value is either a bare article title (use the row's language wiki) or a full
     // URL. For a wikipedia URL the wiki language comes from the host (zh./en.…); non-wikipedia
     // hosts (e.g. Baidu Baike) are unsupported and return null so the entry is logged.
-    static JSONObject summaryFromOverride(String rowWl, String override) {
+    static JSONObject resolveOverride(String rowWl, String override, boolean longIntro) {
         String s = override.trim();
         if (s.contains("://")) {
             try {
@@ -113,12 +122,12 @@ public class WikiFetcher {
                     return null;
                 }
                 String sub = host.substring(0, host.indexOf('.'));
-                return summary(sub, titleFromOverride(s));
+                return extract(sub, titleFromOverride(s), longIntro);
             } catch (Exception e) {
                 return null;
             }
         }
-        return summary(rowWl, s);
+        return extract(rowWl, s, longIntro);
     }
 
     // an override value may be an exact article title or a full wiki URL; extract the title
@@ -150,20 +159,66 @@ public class WikiFetcher {
         return s.replaceAll("\\[[^\\]]*\\]", "").replaceAll("\\s+", " ").trim();
     }
 
-    // resolve via REST summary on the name; on miss/disambiguation, search then summary
-    static JSONObject fetch(String wl, String name) {
-        JSONObject r = summary(wl, name);
+    // resolve via the name; on miss/disambiguation, search then retry
+    static JSONObject autoFetch(String wl, String name, boolean longIntro) {
+        JSONObject r = extract(wl, name, longIntro);
         if (r != null) {
             return r;
         }
         String best = searchTitle(wl, name);
         if (best != null && !best.equals(name)) {
-            r = summary(wl, best);
+            r = extract(wl, best, longIntro);
             if (r != null) {
                 return r;
             }
         }
         return null;
+    }
+
+    // short lead (REST summary) or, for longIntro, the full lead section via the query API.
+    // summary() validates the article is a real page (not a disambiguation) and resolves
+    // redirects; longExtract() then pulls the fuller intro for that canonical title.
+    static JSONObject extract(String wl, String title, boolean longIntro) {
+        JSONObject s = summary(wl, title);
+        if (s == null) {
+            return null;
+        }
+        if (!longIntro) {
+            return s;
+        }
+        JSONObject lng = longExtract(wl, s.getString("title"));
+        return lng != null ? lng : s;
+    }
+
+    static JSONObject longExtract(String wl, String title) {
+        try {
+            JSONObject d = getJson("https://" + wl + ".wikipedia.org/w/api.php?action=query&prop=extracts&exintro=1&explaintext=1&redirects=1&format=json&titles="
+                    + enc(title), acceptLang(wl));
+            if (d == null) {
+                return null;
+            }
+            JSONObject pages = d.getJSONObject("query").getJSONObject("pages");
+            for (String k : pages.keySet()) {
+                JSONObject p = pages.getJSONObject(k);
+                String ex = p.getString("extract");
+                if (ex == null || ex.trim().isEmpty()) {
+                    return null;
+                }
+                JSONObject out = new JSONObject(true);
+                out.put("title", p.getString("title"));
+                out.put("url", "https://" + wl + ".wikipedia.org/wiki/" + enc(p.getString("title").replace(" ", "_")));
+                out.put("text", stripRefs(ex.trim()));
+                return out;
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // drop wiki reference markers like [8], [a], [注 3]
+    static String stripRefs(String s) {
+        return s.replaceAll("\\[\\d+\\]", "").replaceAll("\\[[a-zA-Z]\\]", "").replaceAll("\\[注[^\\]]*\\]", "");
     }
 
     // zh.wikipedia serves mixed/traditional text by default; request the Simplified variant
