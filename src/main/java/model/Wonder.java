@@ -125,6 +125,13 @@ public class Wonder extends UnlockableWithIcon {
             leftColumnItems.add(Tools.getBody(null, Tools.getTextWithAlt(description, language)));
         }
 
+        // 历史背景 from wikipedia (需求2)
+        String wikiHistory = Tools.getWikiHistory(tag, language);
+        if (wikiHistory != null) {
+            leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
+            leftColumnItems.add(Tools.getBody(null, wikiHistory));
+        }
+
         // 引言 (flavor quote): resolve the Quote LOC key from the Buildings table in the page
         // language. The key often differs from the building tag (e.g. BUILDING_TEMPLE_ARTEMIS ->
         // LOC_BUILDING_TEMPLE_OF_ARTEMIS_QUOTE), so we must read it rather than derive it. The

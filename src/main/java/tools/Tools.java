@@ -290,6 +290,30 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "History": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "历史背景";
+                    }
+                    case "en_US": {
+                        return "History";
+                    }
+                }
+                break;
+            }
+            case "WikiSource": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "来源：维基百科";
+                    }
+                    case "en_US": {
+                        return "Source: Wikipedia";
+                    }
+                }
+                break;
+            }
             case "Quotes": {
                 switch (language) {
                     case "zh_Hans":
@@ -2740,6 +2764,47 @@ public class Tools implements Constants {
         object.put("type", "quote");
         object.put("text", text);
         return object;
+    }
+
+    // the game's civilopedia HISTORY prose for a features-chapter entry (terrain / feature /
+    // natural wonder), joining its paragraphs; null when the entry has no history text
+    public static String getFeatureHistory(String tag, String language) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 1; i <= 20; i++) {
+            String para = getText("LOC_PEDIA_FEATURES_PAGE_" + tag + "_CHAPTER_HISTORY_PARA_" + i, language);
+            if (para == null) {
+                break;
+            }
+            if (sb.length() > 0) {
+                sb.append("[NEWLINE]");
+            }
+            sb.append(para);
+        }
+        return sb.length() > 0 ? sb.toString() : null;
+    }
+
+    // scraped wikipedia history for an entity (需求2), read from manual/wiki/{lang}/{tag}.json;
+    // null if not fetched. A source-attribution link (CC BY-SA) is appended.
+    public static String getWikiHistory(String tag, String language) {
+        File f = new File("manual/wiki/" + language + "/" + tag + ".json");
+        if (!f.exists()) {
+            return null;
+        }
+        try {
+            JSONObject o = readJSON(f);
+            String text = o.getString("text");
+            if (text == null || text.trim().isEmpty()) {
+                return null;
+            }
+            String body = text.trim();
+            String url = o.getString("url");
+            if (url != null && !url.isEmpty()) {
+                body += "[NEWLINE]<a href=\"" + url + "\" target=\"_blank\">" + getControlText("WikiSource", language) + "</a>";
+            }
+            return body;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     // wrap text in a coloured span; the raw HTML survives the page's final

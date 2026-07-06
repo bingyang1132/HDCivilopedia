@@ -89,6 +89,12 @@ public class Terrain extends WritableWithIcon {
         JSONObject object = super.toJson(language);
 
         JSONArray leftColumnItems = new JSONArray();
+        // 历史背景 from the game's civilopedia prose
+        String history = Tools.getFeatureHistory(tag, language);
+        if (history != null) {
+            leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
+            leftColumnItems.add(Tools.getBody(null, history));
+        }
         object.put("leftColumnItems", leftColumnItems);
 
         JSONArray rightColumnItems = new JSONArray();

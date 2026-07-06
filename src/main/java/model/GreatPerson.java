@@ -243,6 +243,13 @@ public class GreatPerson extends WritableWithIcon {
             }
         }
 
+        // 历史背景 from wikipedia (需求2)
+        String wikiHistory = Tools.getWikiHistory(tag, language);
+        if (wikiHistory != null) {
+            leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
+            leftColumnItems.add(Tools.getBody(null, wikiHistory));
+        }
+
         return object;
     }
 

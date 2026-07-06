@@ -20,6 +20,7 @@ public class NaturalWonder extends WritableWithIcon {
     public static final Map<String, NaturalWonder> wonders = new HashMap<>();
 
     public String description;
+    public String quoteTag;
     public int movement;
     public int sight;
     public int defense;
@@ -45,6 +46,7 @@ public class NaturalWonder extends WritableWithIcon {
                 NaturalWonder wonder = new NaturalWonder(tag);
                 wonder.name = r1.getString("Name");
                 wonder.description = r1.getString("Description");
+                wonder.quoteTag = r1.getString("Quote");
                 if (!r1.getBoolean("Impassable")) {
                     wonder.movement = r1.getInt("MovementChange");
                 }
@@ -94,6 +96,19 @@ public class NaturalWonder extends WritableWithIcon {
         if (description != null) {
             leftColumnItems.add(Tools.getHeader(Tools.getControlText("Description", language)));
             leftColumnItems.add(Tools.getBody(null, Tools.getTextWithAlt(description, language)));
+        }
+        // 历史背景 from the game's civilopedia prose, then the flavour 引言
+        String history = Tools.getFeatureHistory(tag, language);
+        if (history != null) {
+            leftColumnItems.add(Tools.getHeader(Tools.getControlText("History", language)));
+            leftColumnItems.add(Tools.getBody(null, history));
+        }
+        if (quoteTag != null) {
+            String quote = Tools.getText(quoteTag, language);
+            if (quote != null) {
+                leftColumnItems.add(Tools.getHeader(Tools.getControlText("Quotes", language)));
+                leftColumnItems.add(Tools.getQuote(quote));
+            }
         }
         object.put("leftColumnItems", leftColumnItems);
 

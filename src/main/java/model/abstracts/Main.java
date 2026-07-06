@@ -126,9 +126,14 @@ public class Main {
                 System.out.println("loading...");
                 load();
 
-                Page.deleteFiles(new File("json")); 
+                Page.deleteFiles(new File("json"));
                 System.out.println("writing json...");
                 writeAll();
+            } else if (cmd.equals("wiki")) {
+                System.out.println("loading...");
+                load();
+                System.out.println("fetching wikipedia history...");
+                tools.WikiFetcher.fetchAll(args.length >= 2 ? Integer.parseInt(args[1]) : 0);
             } else if (cmd.equals("build")) {
                 buildChangelog(args[1], args.length >= 3 ? args[2] : "v" + args[1]);
             } else if (cmd.equals("after_init")) {

@@ -1,0 +1,8 @@
+# Wiki article overrides for entries that auto-matching missed (see _failures.tsv).
+# Format (TAB-separated):  language<TAB>tag<TAB>exact Wikipedia article title
+#   language: zh_Hans_CN or en_US   tag: the entity tag from _failures.tsv
+# After editing, re-run:  Main wiki
+#   Only these rows (and any still-unfetched entries) are (re)fetched; existing files are kept.
+# Lines starting with # are ignored. Below are two verified examples — add the rest from _failures.tsv.
+zh_Hans_CN	CIVILIZATION_MACEDON	马其顿王国
+zh_Hans_CN	LEADER_PHILIP_II	腓力二世 (西班牙)
