@@ -73,7 +73,7 @@ public class WikiFetcher {
                     continue;
                 }
                 JSONObject result = (override != null && !override.isEmpty())
-                        ? summary(wl, titleFromOverride(override))
+                        ? summaryFromOverride(wl, override)
                         : fetch(wl, name);
                 sleep(120);
                 if (result == null) {
@@ -99,6 +99,26 @@ public class WikiFetcher {
             targets.add(w);
             n++;
         }
+    }
+
+    // an override value is either a bare article title (use the row's language wiki) or a full
+    // URL. For a wikipedia URL the wiki language comes from the host (zh./en.…); non-wikipedia
+    // hosts (e.g. Baidu Baike) are unsupported and return null so the entry is logged.
+    static JSONObject summaryFromOverride(String rowWl, String override) {
+        String s = override.trim();
+        if (s.contains("://")) {
+            try {
+                String host = new URL(s).getHost();
+                if (host == null || !host.endsWith("wikipedia.org")) {
+                    return null;
+                }
+                String sub = host.substring(0, host.indexOf('.'));
+                return summary(sub, titleFromOverride(s));
+            } catch (Exception e) {
+                return null;
+            }
+        }
+        return summary(rowWl, s);
     }
 
     // an override value may be an exact article title or a full wiki URL; extract the title
