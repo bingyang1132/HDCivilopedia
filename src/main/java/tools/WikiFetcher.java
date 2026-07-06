@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 import model.Civilization;
@@ -159,20 +158,11 @@ public class WikiFetcher {
         return s.replaceAll("\\[[^\\]]*\\]", "").replaceAll("\\s+", " ").trim();
     }
 
-    // resolve via the name; on miss/disambiguation, search then retry
+    // resolve strictly by the exact article title (the localized name). The old search
+    // fallback returned garbage for obscure names (an Icelandic lawspeaker -> a footballer),
+    // so a miss now returns null and the page falls back to the game's own history.
     static JSONObject autoFetch(String wl, String name, boolean longIntro) {
-        JSONObject r = extract(wl, name, longIntro);
-        if (r != null) {
-            return r;
-        }
-        String best = searchTitle(wl, name);
-        if (best != null && !best.equals(name)) {
-            r = extract(wl, best, longIntro);
-            if (r != null) {
-                return r;
-            }
-        }
-        return null;
+        return extract(wl, name, longIntro);
     }
 
     // short lead (REST summary) or, for longIntro, the full lead section via the query API.
@@ -244,23 +234,6 @@ public class WikiFetcher {
             }
             out.put("text", extract.trim());
             return out;
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
-    static String searchTitle(String wl, String name) {
-        try {
-            JSONObject d = getJson("https://" + wl + ".wikipedia.org/w/api.php?action=query&list=search&srsearch="
-                    + enc(name) + "&srlimit=1&format=json", acceptLang(wl));
-            if (d == null) {
-                return null;
-            }
-            JSONArray hits = d.getJSONObject("query").getJSONArray("search");
-            if (hits.isEmpty()) {
-                return null;
-            }
-            return hits.getJSONObject(0).getString("title");
         } catch (Exception e) {
             return null;
         }
