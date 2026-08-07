@@ -73,18 +73,60 @@ public class DataBaseLoader {
         return n;
     }
 
+    // loadSQL 按 ";\n" 切句，而注释里的分号会把一条完整语句劈成两半：/* ... */ 注释掉的语句会照常
+    // 执行、残留的 "*/" 报 near "*"；-- 行注释里的 ";" 则让多行 values 断在中间（incomplete input
+    // + near "("）。所以切句前先去掉两种注释。扫描跳过字符串字面量，避免误删其中的 -- 和 /*；
+    // 保留换行，切句位置不受影响。
+    static String stripComments(String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        int i = 0;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (c == '\'' || c == '"') {
+                int end = s.indexOf(c, i + 1);
+                if (end < 0) {
+                    out.append(s, i, s.length());
+                    break;
+                }
+                out.append(s, i, end + 1);
+                i = end + 1;
+            } else if (c == '-' && i + 1 < s.length() && s.charAt(i + 1) == '-') {
+                int end = s.indexOf('\n', i);
+                if (end < 0) {
+                    break;
+                }
+                i = end;
+            } else if (c == '/' && i + 1 < s.length() && s.charAt(i + 1) == '*') {
+                int end = s.indexOf("*/", i + 2);
+                if (end < 0) {
+                    break;
+                }
+                for (int j = i; j < end; j++) {
+                    if (s.charAt(j) == '\n') {
+                        out.append('\n');
+                    }
+                }
+                i = end + 2;
+            } else {
+                out.append(c);
+                i++;
+            }
+        }
+        return out.toString();
+    }
+
     public static void loadSQL(File file, Statement statement) throws Exception {
         if (Init.VERBOSE) System.out.println("Loading SQL file: " + file.getAbsolutePath());
 
-        String text = Tools.readFromFile(file);
+        String text = stripComments(Tools.readFromFile(file));
 
         String[] lines = (text + " ").split("(;\\s*\\n|;\\s*(?=--))");
         //String[] lines = (text + " ").split(";");
         for (int i = 0; i < lines.length - 1; i++) {
-            if (lines[i] == null) {
+            if (lines[i] == null || lines[i].trim().isEmpty()) {
                 continue;
             }
-            
+
             // 合并 CREATE TRIGGER 的多行内容
             if (lines[i].contains("CREATE TRIGGER") && lines[i].contains("BEGIN") && !lines[i].contains("END")) {
                 lines[i + 1] = lines[i] + ";" + lines[i + 1];
@@ -143,12 +185,11 @@ public class DataBaseLoader {
             //     }
             // }
             
-            // lines[i] = lines[i].replaceAll("'Index'", "'Idx'");
-            // 检查是否修改 IconDefinitions 表
-            boolean isIconDefinitions = lines[i].matches("(?i).*\\bIconDefinitions\\b.*"); // 忽略大小写匹配表名
-            if (!isIconDefinitions) {
-                lines[i] = lines[i].replaceAll("'Index'", "'Idx'");
-            }
+            // "Index" 是 SQLite 关键字，建表时统一改名 Idx（读取侧 Tools.getIcon 也按 Idx 取）。
+            // mod 的 IconDefinitions insert 用的是双引号/方括号写法，一并归一，否则整条插入被拒、图标丢失。
+            lines[i] = lines[i].replaceAll("'Index'", "'Idx'")
+                    .replaceAll("\"Index\"", "\"Idx\"")
+                    .replaceAll("\\[Index\\]", "[Idx]");
 
             trace("SQL", file.getName(), lines[i]);
             try {

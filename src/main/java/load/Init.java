@@ -230,7 +230,15 @@ public class Init {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+        // 若干 mod 的 Colors.sql 往 PlayerColors 写 TextColor，但基础游戏的 PlayerColors.xml 没这列，
+        // 整条 insert 会被拒。补上该列，让这些 mod 的配色能落库。
+        try {
+            statement.execute("alter table PlayerColors add column TextColor TEXT;");
+        } catch (Exception e) {
+            // 已存在则忽略
+        }
+
+
         // load icon table in extra.sqlite
         File folder = new File(Tools.STEAM_FOLDER + "/common/Sid Meier's Civilization VI/Base/Assets/UI/Icons");
         for(File file : folder.listFiles()) {
