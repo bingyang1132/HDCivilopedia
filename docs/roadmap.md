@@ -1,6 +1,7 @@
 # 后续计划 / Roadmap
 
-按优先级与性价比排列的候选方向。
+按优先级与性价比排列的候选方向。已发现但未修的缺陷记在 [known-issues.md](known-issues.md)，
+那里同时记了**怎么检测**每一类静默失败——这个生成器不会因为出错而构建失败，只会少东西。
 
 ## 性能（继续）
 已完成：连接复用 + 缓存（load/write）、init 事务化 + PRAGMA + 日志改造。后续：
@@ -11,12 +12,15 @@
 - **HTML 渲染**：`Page` 用 DOM+Transformer 序列化上千文件，可评估改 `StringBuilder`/模板（FreeMarker）。
 
 ## 功能
-- **文明/领袖/城邦/伟人简介**：推荐做一个**独立 mod 改 database**（往 `LocalizedText`/自定义表写简介），本项目只读取——零爬虫、随游戏更新、与现有 `Tools.getText()` 管线天然兼容。需更详尽资料再用离线爬 wiki 脚本（放 `scripts/`）补充。
-- **搜索功能**：产物已是静态 JSON/HTML，适合**纯前端搜索**——构建期多产一份精简 `search-index.json`（title/分类/tag/关键词），前端用 Fuse.js/lunr.js 模糊搜索，零后端。`Main.WRITABLES_ZHINDEX` 可作索引数据源。
+- ~~**文明/领袖/城邦/伟人简介**~~ 已完成：走 Wikipedia 缓存（`Main wiki` → `manual/wiki/`）。
+- ~~**搜索功能**~~ 已完成：构建期产 `output/{lang}/search-data.js`，前端 `search.js` 做模糊匹配。
 
 ## 工程化
 - 升级 `maven-shade-plugin`（1.2.1 → 3.x），让 `mvn package` 在现代 JDK 可打 fat jar。
 - **增量构建**：按内容 hash 跳过未变对象，避免每次全量重跑。
-- 外部化 `tools/Constants.java` 里硬编码的游戏路径到配置文件。
+- **外部化 `tools/Constants.java` 里硬编码的游戏路径**（优先级已提高）：`DDS_FOLDERS` 那 83 条
+  绝对路径里一度有 31 条因 mod 改名而失效，直接导致大批图标解不出来且无人察觉。
+- **产物 audit**：每轮生成后报告「失效路径数 / 无 `src` 的 iconlabel 数 / 两棵输出树页面数差」，
+  异常时打醒目日志。见 [known-issues.md](known-issues.md)——这几类问题都是靠没人看才攒起来的。
 - 基础单元测试 + GitHub Actions CI（编译 + 冒烟 `-Dhd.limit`）。
 - `manual/output` 的科技/市政大图目前是外部预渲染手工放入，可评估在代码内生成、消除手工步骤。
