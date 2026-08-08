@@ -192,6 +192,20 @@ public class CityState extends WritableWithIcon {
             }
         }
 
+        // The four resources a suzerain gets from this city-state. They are a property of the
+        // city-state *type*, so every city-state of a type lists the same four -- which is what
+        // a reader looking at one particular city-state wants to know.
+        JSONArray resourceContents = new JSONArray();
+        for (Resource resource : Resource.resources.values()) {
+            if (getFolder().equalsIgnoreCase(resource.cityStateType)) {
+                resourceContents.add(resource.getIconLabel(language));
+            }
+        }
+        if (!resourceContents.isEmpty()) {
+            rightColumnItems.add(Tools.getStatbox(
+                    Tools.getControlText("CityStateResources", language), resourceContents));
+        }
+
         return object;
     }
 

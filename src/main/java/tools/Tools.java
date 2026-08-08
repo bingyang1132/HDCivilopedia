@@ -2643,6 +2643,66 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "CityState": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "城邦";
+                    }
+                    case "en_US": {
+                        return " city-state";
+                    }
+                }
+                break;
+            }
+            case "CityStateResources": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "城邦专属资源";
+                    }
+                    case "en_US": {
+                        return "City-State Resources";
+                    }
+                }
+                break;
+            }
+            case "CityStateResourceSource": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "来源";
+                    }
+                    case "en_US": {
+                        return "Granted By";
+                    }
+                }
+                break;
+            }
+            case "CityStateTypeUnused": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "轻工业城邦（暂未启用）";
+                    }
+                    case "en_US": {
+                        return "Light Industrial city-state (not in game yet)";
+                    }
+                }
+                break;
+            }
+            case "ResourceClassification": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "资源分类";
+                    }
+                    case "en_US": {
+                        return "Classification";
+                    }
+                }
+                break;
+            }
             case "PediaHome": {
                 switch (language) {
                     case "zh_Hans":

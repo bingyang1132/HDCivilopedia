@@ -34,6 +34,11 @@ public class Resource extends WritableWithIcon {
     public String prereqTech;
     public String prereqCivic;
 
+    /** Set for city-state exclusive resources: the granting city-state type, e.g. "SCIENTIFIC". */
+    public String cityStateType;
+    /** Set for city-state exclusive resources, e.g. "RESOURCE_CLASSIFICATION_HD_STATIONERY". */
+    public String resourceClassification;
+
     public int improvedExtractionRate;
     public String harvestPrereqTech;
 	public List<String> categories = new ArrayList<>();
@@ -55,8 +60,11 @@ public class Resource extends WritableWithIcon {
         try {
             gameplay = DriverManager.getConnection(Tools.GAMEPLAY_DATABASE).createStatement();
     
-            // load resource list
-            ResultSet r1 = gameplay.executeQuery("select * from Resources where exists (select * from Resource_ValidFeatures where ResourceType = Resources.ResourceType) or exists (select * from Resource_ValidTerrains where ResourceType = Resources.ResourceType);");
+            // Load the resource list. The first two clauses take everything that can appear on
+            // the map; the third takes city-state exclusive resources, which are granted by a
+            // suzerain rather than placed on terrain and so have no valid features or terrains
+            // at all -- without it all 36 of them were absent from the pedia entirely.
+            ResultSet r1 = gameplay.executeQuery("select * from Resources where exists (select * from Resource_ValidFeatures where ResourceType = Resources.ResourceType) or exists (select * from Resource_ValidTerrains where ResourceType = Resources.ResourceType) or exists (select * from HD_CityState_Resources where ResourceType = Resources.ResourceType);");
             while (r1.next()) {
                 String tag = r1.getString("ResourceType");
                 Resource resource = new Resource(tag);
@@ -112,6 +120,13 @@ public class Resource extends WritableWithIcon {
                 ResultSet r8 = gameplay.executeQuery("select * from HD_Monopoly_Resource_Categories where ResourceType = \"" + tag + "\";");
                 while (r8.next()) {
                     resource.categories.add(r8.getString("Category"));
+                }
+
+                // load the city-state that grants this resource, if any
+                ResultSet r9 = gameplay.executeQuery("select * from HD_CityState_Resources where ResourceType = \"" + tag + "\";");
+                if (r9.next()) {
+                    resource.cityStateType = r9.getString("CityStateType");
+                    resource.resourceClassification = r9.getString("ResourceClassificationType");
                 }
 
                 // load improvement icon
@@ -175,6 +190,19 @@ public class Resource extends WritableWithIcon {
         traitContents.add(Tools.getSeparator());
         traitContents.add(Tools.getLabel(getFolderName(language)));
 
+        // A city-state resource has no terrain, yields, harvest or improvement, so every section
+        // below is skipped for it and the page would otherwise say nothing at all. These two
+        // lines are what it does have: who grants it, and which classification it belongs to.
+        if (cityStateType != null) {
+            traitContents.add(Tools.getSeparator());
+            traitContents.add(Tools.getHeader(Tools.getControlText("CityStateResourceSource", language)));
+            traitContents.add(Tools.getLabel(cityStateTypeName(language)));
+            if (resourceClassification != null) {
+                traitContents.add(Tools.getHeader(Tools.getControlText("ResourceClassification", language)));
+                traitContents.add(Tools.getLabel(Tools.getTextWithAlt("LOC_" + resourceClassification + "_NAME", language)));
+            }
+        }
+
         if (yields.size() > 0) {
             for (Entry<String, Integer> entry : yields.entrySet()) {
                 traitContents.add(Tools.getLabel("+" + entry.getValue() + Tools.getYield(entry.getKey(), language)));
@@ -209,9 +237,10 @@ public class Resource extends WritableWithIcon {
             }
         }
 
+        // added at the end, only if something went in: a city-state resource has no prereqs and
+        // no placement, which would otherwise leave an empty "Requirements" box on every page
         JSONArray requirementContents = new JSONArray();
-        rightColumnItems.add(Tools.getStatbox(Tools.getControlText("Requirements", language), requirementContents));
-        
+
         if (prereqTech != null) {
             Technology tech = Technology.technologies.get(prereqTech);
             if (tech != null) {
@@ -229,16 +258,24 @@ public class Resource extends WritableWithIcon {
             }
         }
 
-        requirementContents.add(Tools.getSeparator());
-        requirementContents.add(Tools.getHeader(Tools.getControlText("Placement", language)));
-        for (String t : validTerrains) {
-            Terrain terrain = Terrain.terrains.get(t);
-            requirementContents.add(terrain.getIconLabel(language));
+        // city-state resources are granted by a suzerain, never placed, so this header would
+        // stand alone over an empty list
+        if (!validTerrains.isEmpty() || !validFeatures.isEmpty()) {
+            requirementContents.add(Tools.getSeparator());
+            requirementContents.add(Tools.getHeader(Tools.getControlText("Placement", language)));
+            for (String t : validTerrains) {
+                Terrain terrain = Terrain.terrains.get(t);
+                requirementContents.add(terrain.getIconLabel(language));
+            }
+            for (String f : validFeatures) {
+                Feature feature = Feature.features.get(f);
+                requirementContents.add(feature.getIconLabel(language));
+            }
         }
-        for (String f : validFeatures) {
-            Feature feature = Feature.features.get(f);
-            requirementContents.add(feature.getIconLabel(language));
-        }       
+
+        if (!requirementContents.isEmpty()) {
+            rightColumnItems.add(Tools.getStatbox(Tools.getControlText("Requirements", language), requirementContents));
+        }
 
         return object;
     }
@@ -277,8 +314,27 @@ public class Resource extends WritableWithIcon {
         return (core + Tools.getControlText("Resources", language)).trim();
     }
 
+    /**
+     * Display name of the granting city-state type. `LIGHT_INDUSTRIAL` exists in
+     * HD_CityState_Resources but no city-state has that type yet (CSE_ClassTypes and every
+     * city-state's inheritLeader list only eight), so it has no name to resolve and is labelled
+     * as not yet in game rather than given a city-state type that does not exist.
+     */
+    private String cityStateTypeName (String language) {
+        String key = "LEADER_MINOR_CIV_" + cityStateType;
+        String name = Tools.getControlText(key, language);
+        // getControlText echoes the key back when it has no entry, so that is the "unknown" signal
+        if (key.equals(name)) {
+            return Tools.getControlText("CityStateTypeUnused", language);
+        }
+        return name + Tools.getControlText("CityState", language);
+    }
+
     @Override
     public String getFolder() {
+        if (cityStateType != null) {
+            return "citystate";
+        }
         if (splitByImprovement()) {
             Improvement improvement = firstImprovement();
             if (improvement != null) {
@@ -290,6 +346,10 @@ public class Resource extends WritableWithIcon {
 
     @Override
     public int getFolderOrder() {
+        // between luxury and strategic; these are luxuries but not map ones
+        if (cityStateType != null) {
+            return 1500;
+        }
         switch (resourceClassType) {
             case "RESOURCECLASS_BONUS":     return 0;
             case "RESOURCECLASS_LUXURY":    return 1000;
@@ -301,6 +361,11 @@ public class Resource extends WritableWithIcon {
 
     @Override
     public String getFolderName(String language) {
+        if (cityStateType != null) {
+            // not "luxury", which is what the class alone would say and would read as a map resource
+            return Tools.colorText(Tools.getControlText("CityStateResources", language),
+                    CLASS_COLORS.get(resourceClassType));
+        }
         String colored = Tools.colorText(classLabel(language), CLASS_COLORS.get(resourceClassType));
         if (splitByImprovement()) {
             Improvement improvement = firstImprovement();
