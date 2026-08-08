@@ -32,12 +32,19 @@
 
 ## 以后再说
 
-### 图标缺口（**暂停中**，等素材）
+### 图标缺口（**已冻结**）
 
-还有约 507 个标签没有图标，素材只存在于 `.blp` 包里。逆向卡住了，详见
-[blp-format.md](blp-format.md)（含四条已排除的假设，别重试）。当前走的是向 mod 作者要源图这条路，
-清单见 [missing-atlas-art.md](missing-atlas-art.md)。素材到位后：放进 `DDS_FOLDERS` 能看到的目录
-→ 重跑 `after_init` → 看 `searchEntriesNoIcon` 有没有降（基线 1261 / 4783）。
+还有约 507 个标签没有图标，素材只存在于 `.blp` 包里。三条路都堵住了：
+
+1. **逆向 `.blp`** —— 卡住，四条假设全排除，详见 [blp-format.md](blp-format.md)（别重试那四条）。
+2. **向作者要源图** —— 2026-08-08 XHH 反馈：**美术资源作者一般不会给**。清单
+   [missing-atlas-art.md](missing-atlas-art.md) 留着，但不指望走通。
+3. **游戏内截图** —— XHH 提的思路，也是目前唯一还成立的：写一个**程序化截图工具**，
+   在游戏内百科页面里逐条截图，理想情况用 **Lua 控制百科翻页**。这是社区实际在用的路子
+   （Sukritact's Texture Extractor 同源），但工作量大，暂不启动。
+
+素材若哪天到位：丢进 `mods.folder` 或 Steam 库任意位置（现在会自动扫到）→ 重跑 `after_init`
+→ 看 `searchEntriesNoIcon` 有没有降。
 
 ### 性能
 
