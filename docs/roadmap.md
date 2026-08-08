@@ -20,7 +20,7 @@
 - **增量构建**：按内容 hash 跳过未变对象，避免每次全量重跑。
 - **外部化 `tools/Constants.java` 里硬编码的游戏路径**（优先级已提高）：`DDS_FOLDERS` 那 83 条
   绝对路径里一度有 31 条因 mod 改名而失效，直接导致大批图标解不出来且无人察觉。
-- **产物 audit**：每轮生成后报告「失效路径数 / 无 `src` 的 iconlabel 数 / 两棵输出树页面数差」，
-  异常时打醒目日志。见 [known-issues.md](known-issues.md)——这几类问题都是靠没人看才攒起来的。
+- ~~**产物 audit**~~ 已完成：`view/Audit.java`，`page`/`after_init` 后自动跑，对比
+  `manual/audit-baseline.json` 并标出变差的指标。也是性能重构"产物不变"的验收工具。
 - 基础单元测试 + GitHub Actions CI（编译 + 冒烟 `-Dhd.limit`）。
 - `manual/output` 的科技/市政大图目前是外部预渲染手工放入，可评估在代码内生成、消除手工步骤。

@@ -25,6 +25,7 @@ mvn compile          # 仅编译（命令行）
 | `changelog` | 加载内容并写 JSON | `database/` → `json/` |
 | `page` | JSON 渲染为 HTML | `json/` → `output/` |
 | `build <version> [out]` | 生成更新日志 JSON | Changelog 文本 → `manual/json/.../updates/` |
+| `audit [save]` | 产物体检（`page`/`after_init` 后自动跑） | `json/` + `output*/` → 报告 |
 
 无参运行：执行 `icons → load → write → page` 全流程（默认**跳过 init**，复用已建好的 `database/`）。需要重建数据库时单独先跑一次 `init`。
 
@@ -56,6 +57,11 @@ java -Dhd.limit=50 -Dhd.verbose=true -cp <classpath> model.abstracts.Main init
 ```
 
 ## 5. 正确性验证
+
+最省事的方式是 `Main audit`（约 1 秒）：它对比 `manual/audit-baseline.json`，
+只在指标往坏的方向动时标 `<== WORSE`。改动前后各跑一次；确认改好了就 `Main audit save`
+更新基线。各指标含义见 [known-issues.md](known-issues.md)。
+
 
 性能优化不应改变产物。验证方式：
 - DB 层抽查：`sqlite3 database/DebugGameplay.sqlite "select count(*) from Buildings;"` 等关键表行数是否合理（建筑数百、本地化数万）。

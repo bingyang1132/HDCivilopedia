@@ -14,6 +14,7 @@ import com.alibaba.fastjson.JSONObject;
 import changelog.Changelog;
 import changelog.ChangelogResource;
 import load.Init;
+import view.Audit;
 import view.Page;
 import model.*;
 import tools.Tools;
@@ -118,6 +119,10 @@ public class Main {
             if (cmd.equals("page")) {
                 System.out.println("converting json into html...");
                 Page.convertAll();
+                Audit.run(false);
+            } else if (cmd.equals("audit")) {
+                // `audit save` records the current numbers as the new baseline
+                Audit.run(args.length >= 2 && args[1].equals("save"));
             } else if (cmd.equals("init")) {
                 Init.main(null);
             } else if (cmd.equals("icons")) {
@@ -153,6 +158,8 @@ public class Main {
 
                 System.out.println("converting json into html...");
                 Page.convertAll();
+
+                Audit.run(false);
             } else {
                 System.out.println("unknown command");
                 
@@ -182,6 +189,8 @@ public class Main {
 
             System.out.println("converting json into html...");
             Page.convertAll();
+
+            Audit.run(false);
 
             // ---------------------------------------------------------------------------
             // System.out.println("loading...");
