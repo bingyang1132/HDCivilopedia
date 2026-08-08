@@ -54,8 +54,34 @@
 
 ## 未修复 / 待确认
 
-- **约 524 个标签完全没有图标**。大部分是奇观——它们用大幅立绘而非图标，大概率是正常的，
-  但没有逐个确认过。
+### 剩下的图标缺口：资源被打包进 `.blp`，不是不存在
+
+约 507 个标签仍然没有图标。查过了，**不是"磁盘上没有"**：
+
+| 分类 | 数量 |
+|---|---|
+| 有 atlas 声明，但 `.dds` 在 `DDS_FOLDERS` 里找不到 | 379 标签 / 160 个 atlas |
+| 连 `IconDefinitions` 行都没有 | 145 标签 |
+
+对那 160 个 atlas 做了全盘搜索（Mods、创意工坊、SDK Assets、游戏本体），`.dds` 文件确实不存在，
+**换任何扩展名也不存在**。但它们被打包在 **`.blp`** 里——Firaxis 的纹理包格式，文件头是 `CIVBLP`。
+例如 `xhh-civ-bavaria` 整个 mod 没有一个 `.dds`，只有
+`Platforms/Windows/BLPs/UITexture.blp`（47 MB），里面能直接读出
+`CIVILIZATION_XHH_BAVARIA_22` 这样的条目名。
+
+扫了 Mods 和创意工坊下全部 549 个 `.blp`（共 2.6 GB）：
+**160 个缺失 atlas 里有 89 个的纹理确实躺在某个 `.blp` 内。**
+
+所以这部分要恢复，需要一个 **`.blp` 读取器**（解析 `CIVBLP` v2 的条目表 + 取出内嵌纹理），
+而不是继续往 `DDS_FOLDERS` 里加路径。这是个边界清晰但不小的活。
+
+剩下 71 个 atlas 的纹理在本机确实完全不存在——多半是 HD 的 `ModSupport/` 给未安装的第三方 mod
+声明了图标，那种情况本来就出不来。
+
+### 其它
+
+- **6 个图标解码出来是全透明的**：`ICON_UNIT_TREBUCHET`、`ICON_UNIT_MAN_AT_ARMS`、
+  `ICON_UNIT_LINE_INFANTRY`、三个 `ICON_PROJECT_*BREAD_AND_CIRCUSES*`。
 - **6 个图标解码出来是全透明的**：`ICON_UNIT_TREBUCHET`、`ICON_UNIT_MAN_AT_ARMS`、
   `ICON_UNIT_LINE_INFANTRY`、三个 `ICON_PROJECT_*BREAD_AND_CIRCUSES*`。
 - **`ICON_BUILDING_CANAL` 是 mod 数据的问题**，不是生成器的：它被声明为
