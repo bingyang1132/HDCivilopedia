@@ -1218,6 +1218,15 @@ public class Page {
         Element sidebar = document.createElement("div");
         sidebar.setAttribute("id", "pediaSidebar");
         sidebar.setAttribute("class", "pediaSidebar");
+
+        // "index" is not one of HEADERS, so without this row the sidebar can reach every
+        // chapter but never the pedia's own start page
+        Element home = document.createElement("a");
+        sidebar.appendChild(home);
+        home.setAttribute("class", "pediaSidebarItem pediaSidebarHome");
+        home.setAttribute("href", "../../index/index/toc.html");
+        home.setTextContent(Tools.getControlText("PediaHome", lang));
+
         for (String chapter : HEADERS) {
             Element a = document.createElement("a");
             sidebar.appendChild(a);
@@ -1250,9 +1259,29 @@ public class Page {
         overlay.setAttribute("onclick", "pediaToggleSidebar()");
         overlay.setTextContent(" ");
 
+        // The overlay's onclick closes the sidebar on a normal browser, but a WebView that
+        // does not synthesise a click from a tap would strand the user with no way back, so
+        // bind touchstart too. Opening also pushes a history entry, letting the phone's back
+        // button close the sidebar instead of leaving the page.
+        // NB: writeDocumentToFile only un-escapes &lt;/&gt;, so this source must not contain
+        // '&', '<' or '>' — the transformer would turn them into entities and break the JS.
         Element script = document.createElement("script");
         body.appendChild(script);
-        script.setTextContent("function pediaToggleSidebar(){var s=document.getElementById('pediaSidebar');var o=document.getElementById('pediaSidebarOverlay');var open=s.classList.toggle('open');o.style.display=open?'block':'none';}");
+        script.setTextContent(
+                "function pediaSetSidebar(open){"
+                + "var s=document.getElementById('pediaSidebar');"
+                + "var o=document.getElementById('pediaSidebarOverlay');"
+                + "if(open===s.classList.contains('open')){return;}"
+                + "s.classList.toggle('open',open);"
+                + "o.style.display=open?'block':'none';}"
+                + "function pediaToggleSidebar(){"
+                + "var open=!document.getElementById('pediaSidebar').classList.contains('open');"
+                + "pediaSetSidebar(open);"
+                + "try{if(open){history.pushState({pediaSidebar:1},'');}"
+                + "else{var st=history.state;if(st){if(st.pediaSidebar){history.back();}}}}catch(e){}}"
+                + "window.addEventListener('popstate',function(){pediaSetSidebar(false);});"
+                + "document.getElementById('pediaSidebarOverlay').addEventListener('touchstart',"
+                + "function(e){e.preventDefault();pediaToggleSidebar();},false);");
     }
 
     /** Appends the per-language data file and shared behaviour script to a page body. */

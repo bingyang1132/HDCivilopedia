@@ -613,6 +613,13 @@
   border-bottom: 1px solid rgba(214, 197, 156, 0.15);
 }
 
+.pediaSidebarHome {
+  justify-content: center;
+  font-weight: 600;
+  letter-spacing: 2px;
+  border-bottom: 2px solid rgba(214, 197, 156, 0.45);
+}
+
 .pediaSidebarItem:active {
   background-color: rgba(214, 197, 156, 0.18);
 }
@@ -626,6 +633,9 @@
 
 .pediaSidebarOverlay {
   display: none;
+  /* cursor:pointer makes WebKit treat the div as clickable, so a tap fires click */
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
   position: fixed;
   top: 0;
   left: 0;

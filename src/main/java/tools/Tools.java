@@ -2643,6 +2643,18 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "PediaHome": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "百科首页";
+                    }
+                    case "en_US": {
+                        return "Pedia Home";
+                    }
+                }
+                break;
+            }
             case "": {
                 switch (language) {
                     case "zh_Hans":
