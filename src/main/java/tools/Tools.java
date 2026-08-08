@@ -3261,28 +3261,36 @@ public class Tools implements Constants {
         return null;
     }
 
-    public static BufferedImage getImageIgnoringCapital(String name) {
-        BufferedImage cachedImg = IMAGE_CI_CACHE.get(name);
-        if (cachedImg != null) {
-            return cachedImg == NO_IMAGE ? null : cachedImg;
-        }
-        BufferedImage result = null;
+    /**
+     * Decodes the icon named {@code name}, taking the last definition that actually yields an
+     * image. A tag is often defined more than once (the base game plus a mod re-skin); the last
+     * one wins, as it does in game, but the mod's .dds is frequently not on disk. The previous
+     * code committed to a single row and returned null when its atlas was missing, so the icon
+     * silently vanished from every index and search result even though a working base-game
+     * definition sat right next to it.
+     */
+    private static BufferedImage decodeIcon(String name, boolean ignoreCapital) {
         Statement extra = null;
         try {
             extra = Db.conn(EXTRA_DATABASE).createStatement();
-            ResultSet r1 = extra.executeQuery("select * from IconDefinitions where lower(Name) = lower(\"" + name + "\");");
-            int num = 0;
+            String where = ignoreCapital
+                    ? "lower(Name) = lower(\"" + name + "\")"
+                    : "Name = \"" + name + "\"";
+            ResultSet r1 = extra.executeQuery("select Atlas, Idx from IconDefinitions where " + where + ";");
+            List<String[]> definitions = new ArrayList<>();
             while (r1.next()) {
-                num ++;
+                definitions.add(new String[] { r1.getString("Atlas"), r1.getString("Idx") });
             }
-            if (num > 0) {
-                r1 = extra.executeQuery("select * from IconDefinitions where lower(Name) = lower(\"" + name + "\");");
-                for (int i = 0; i < num; i++) {
-                    r1.next();
+            for (int i = definitions.size() - 1; i >= 0; i--) {
+                String[] definition = definitions.get(i);
+                BufferedImage image = null;
+                try {
+                    image = tryGetImage(definition[0], Integer.parseInt(definition[1]));
+                } catch (Exception e) {
                 }
-                String atlas = r1.getString("Atlas");
-                int index = Integer.parseInt(r1.getString("Idx"));
-                result = tryGetImage(atlas, index);
+                if (image != null) {
+                    return image;
+                }
             }
         } catch (Exception e) {
         } finally {
@@ -3290,6 +3298,15 @@ public class Tools implements Constants {
                 try { extra.close(); } catch (Exception e) {}
             }
         }
+        return null;
+    }
+
+    public static BufferedImage getImageIgnoringCapital(String name) {
+        BufferedImage cachedImg = IMAGE_CI_CACHE.get(name);
+        if (cachedImg != null) {
+            return cachedImg == NO_IMAGE ? null : cachedImg;
+        }
+        BufferedImage result = decodeIcon(name, true);
         IMAGE_CI_CACHE.put(name, result == null ? NO_IMAGE : result);
         return result;
     }
@@ -3299,29 +3316,11 @@ public class Tools implements Constants {
         if (cachedImg != null) {
             return cachedImg == NO_IMAGE ? null : cachedImg;
         }
-        BufferedImage result = null;
-        Statement extra = null;
-        try {
-            extra = Db.conn(EXTRA_DATABASE).createStatement();
-            ResultSet r1 = extra.executeQuery("select * from IconDefinitions where Name = \"" + name + "\";");
-            int num = 0;
-            while (r1.next()) {
-                num ++;
-            }
-            if (num > 0) {
-                r1 = extra.executeQuery("select * from IconDefinitions where lower(Name) = lower(\"" + name + "\");");
-                for (int i = 0; i < num; i++) {
-                    r1.next();
-                }
-                String atlas = r1.getString("Atlas");
-                int index = Integer.parseInt(r1.getString("Idx"));
-                result = tryGetImage(atlas, index);
-            }
-        } catch (Exception e) {
-        } finally {
-            if (extra != null) {
-                try { extra.close(); } catch (Exception e) {}
-            }
+        // exact case first, then fall back to a case-insensitive match: some mods declare
+        // IconDefinitions with different capitalisation than the tag they are named for
+        BufferedImage result = decodeIcon(name, false);
+        if (result == null) {
+            result = decodeIcon(name, true);
         }
         IMAGE_CACHE.put(name, result == null ? NO_IMAGE : result);
         return result;

@@ -25,7 +25,7 @@ public interface Constants {
     public static final String NOHD_TEXT_DATABASE = DATABASES + "/" + "nohd_DebugLocalization.sqlite";
 
     // changelog
-    public static final String CHANGELOG = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Changelog";
+    public static final String CHANGELOG = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Changelog";
     
     public static final String PLAYER_COLORS = STEAM_FOLDER + "/" + "common/Sid Meier's Civilization VI/Base/Assets/UI/Colors";
     public static final String EXTRA_SCH = "extra.sql";
@@ -46,33 +46,33 @@ public interface Constants {
 
             // hd  !needs to be updated after new contents be added in the Assets folder
             // other textures
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/city-states-diversity/Textures",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Buildings",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/CityStates",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/GreatPeople",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/GreatWorks",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Policies",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Projects",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Resourceful2",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/TechCivics",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/UnitActions",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Units",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Units/MedivalPirate",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/Wetlands",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/WonderResources",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Assets/HDRESOURCE",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/GameModeSupport/MilitaryMode/ArmsComplement/Assets",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/GameModeSupport/ReligiousArmMode/Assests",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/ThirdParty/EpsBarbarians",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civilizations-diversity/Assets",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Airport",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Khalifa",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Merchant",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Monopoly",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Porcelain",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Resourceful2",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/corporations-diversity/Assets/Suk",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/district-expansion-hd/Assets",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CityStatesDiversity/Textures",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Buildings",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/CityStates",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/GreatPeople",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/GreatWorks",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Policies",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Projects",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Resourceful2",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/TechCivics",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/UnitActions",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Units",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Units/MedivalPirate",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/Wetlands",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/WonderResources",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Assets/HDRESOURCE",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/GameModeSupport/MilitaryMode/ArmsComplement/Assets",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/GameModeSupport/ReligiousArmMode/Assests",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/ThirdParty/EpsBarbarians",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CivilizationsDiversity/Assets",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Airport",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Khalifa",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Merchant",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Monopoly",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Porcelain",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Resourceful2",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_CorporationsDiversity/Assets/Suk",
+            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/HD_DistrictsDiversity/Assets",
 
             // real great people
             "E:/SteamLibrary/steamapps/workshop/content/289070/2383232087/modcompatibility",
