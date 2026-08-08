@@ -29,3 +29,9 @@ ChangelogResouce.json
 
 # Old git history backup
 /.git.old.bak/
+
+# Local maven classpath dump (machine-specific absolute paths)
+/cp.txt
+
+# Local machine paths (config.example.properties is the tracked template)
+/config.properties

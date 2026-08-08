@@ -34,10 +34,15 @@ public class Audit {
 
     public static final File BASELINE = new File("manual/audit-baseline.json");
 
-    /** Metrics where a higher number is worse. Anything not listed is informational. */
+    /**
+     * Metrics where a higher number is worse. Anything not listed is informational: its delta is
+     * printed but never judged. Without that distinction a drop in `pagesDesktop` or
+     * `searchEntriesTotal` — which just means the mod shipped fewer entries — reads as a
+     * regression, and an audit that cries wolf is the thing this class exists to prevent.
+     */
     private static final List<String> LOWER_IS_BETTER = java.util.Arrays.asList(
-            "ddsFoldersDead", "iconlabelsNoSrc", "iconlabelTagsNoSrc", "iconlabelsNoSrcButPngExists",
-            "androidPagesUnexpected", "searchEntriesNoIcon");
+            "configRootsMissing", "iconlabelsNoSrc", "iconlabelTagsNoSrc",
+            "iconlabelsNoSrcButPngExists", "androidPagesUnexpected", "searchEntriesNoIcon");
 
     public static void run (boolean save) throws Exception {
         Map<String, Integer> now = collect();
@@ -58,9 +63,13 @@ public class Audit {
                 int was = baseline.getIntValue(key);
                 int delta = value - was;
                 if (delta != 0) {
-                    boolean bad = LOWER_IS_BETTER.contains(key) == (delta > 0);
-                    note = String.format("  %+d vs baseline %s", delta, bad ? "<== WORSE" : "(better)");
-                    worse |= bad;
+                    if (!LOWER_IS_BETTER.contains(key)) {
+                        note = String.format("  %+d vs baseline", delta);   // informational only
+                    } else {
+                        boolean bad = delta > 0;
+                        note = String.format("  %+d vs baseline %s", delta, bad ? "<== WORSE" : "(better)");
+                        worse |= bad;
+                    }
                 }
             } else if (baseline != null) {
                 note = "  (new metric)";
@@ -85,16 +94,19 @@ public class Audit {
     private static Map<String, Integer> collect () throws Exception {
         Map<String, Integer> m = new LinkedHashMap<>();
 
-        // 1. the hand-maintained texture path list rots whenever a mod folder is renamed, and a
-        //    dead entry costs a whole atlas worth of icons without saying anything
-        int dead = 0;
-        for (String folder : Constants.DDS_FOLDERS) {
-            if (!new File(folder).isDirectory()) {
-                dead++;
+        // 1. texture folders are discovered by walking the configured roots, so they can no
+        //    longer go stale individually -- but a wrong root in config.properties takes the
+        //    whole tree with it, silently. Checked here rather than by touching
+        //    Constants.ddsFolders(), which would trigger the ~17s walk.
+        int missing = 0;
+        for (String root : new String[] { Constants.STEAM_FOLDER, Constants.MODS_FOLDER,
+                Constants.HD_MOD, Constants.DATABASES_SOURCE }) {
+            if (!new File(root).isDirectory()) {
+                System.out.println("[AUDIT] configured root does not exist: " + root);
+                missing++;
             }
         }
-        m.put("ddsFoldersDead", dead);
-        m.put("ddsFoldersTotal", Constants.DDS_FOLDERS.size());
+        m.put("configRootsMissing", missing);
 
         // 2. an iconlabel carries the tag in `alt` but only renders when `src` is set, and `src`
         //    is only set when the DDS decoded at load time. A tag whose png is already sitting in

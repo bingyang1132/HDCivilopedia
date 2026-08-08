@@ -95,8 +95,8 @@
 - **`ICON_BUILDING_CANAL` 是 mod 数据的问题**，不是生成器的：它被声明为
   `ICON_ATLAS_EXHIBITION` 索引 0，和 `ICON_BUILDING_EXHIBITION` 同一个槽位，
   所以运河现在显示成会展中心。这一条应该反馈给 mod 作者。
-- `Constants.DDS_FOLDERS` 仍有 11 条失效路径（4 条是已退订的创意工坊 mod，
-  7 条是 mod 内部被删掉的子目录）。
+- ~~`Constants.DDS_FOLDERS` 的失效路径~~ 已解决：改成扫描 `config.properties` 里的几个根目录、
+  收集所有直接含 `.dds` 的目录，清单不再需要人工维护，也就不会失效。
 
 ## Audit：把上面的检测固化下来
 
@@ -105,7 +105,7 @@
 
 | 指标 | 含义 | 当前基线 |
 |---|---|---|
-| `ddsFoldersDead` | `DDS_FOLDERS` 里已失效的目录数 | 11 |
+| `configRootsMissing` | `config.properties` 里不存在的根目录数 | 0 |
 | `iconlabelsNoSrc` | 渲染出来但没有图标的行数（交叉列出的按行计） | 1092 |
 | `iconlabelTagsNoSrc` | 同上，去重后的标签数 | 507 |
 | `iconlabelsNoSrcButPngExists` | **PNG 已在磁盘却没接上——这个永远是 bug** | 4 |

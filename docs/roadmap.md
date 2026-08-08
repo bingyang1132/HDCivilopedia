@@ -3,7 +3,7 @@
 已发现但未修的缺陷记在 [known-issues.md](known-issues.md)，那里同时记了**怎么检测**每一类静默失败
 ——这个生成器不会因为出错而构建失败，只会少东西。改动前后跑 `Main audit` 对比基线。
 
-一轮耗时参考：`page` ~130s，`after_init` ~390s（其中 `load()` 122s）。
+一轮耗时参考：`page` ~130s，`after_init` ~190s（其中 `load()` 74s）。
 
 ---
 
@@ -24,12 +24,7 @@
 改法建议按性价比：先加拼音（构建期给每条中文标题预生成全拼+首字母，塞进索引）→ 再做前缀优先的排序
 → 再考虑扩到标签/描述。真要做容错再上 Fuse.js/lunr.js，不必一步到位。
 
-### 2. 外部化 `tools/Constants.java` 里硬编码的游戏路径
-
-`DDS_FOLDERS` 那批绝对路径一度有 31 条因 mod 改名失效，直接导致大批图标解不出来且无人察觉。
-换机器、换游戏版本、mod 改名都会再犯。已经改成递归扫描 HD 自己的 Assets，但整体仍是手写清单。
-
-### 3. 基础单元测试 + CI
+### 2. 基础单元测试 + CI
 
 编译 + 冒烟（`-Dhd.limit`）+ `Main audit`。audit 已经能给出「产物没变」的判据，接上 CI 就是回归保护。
 
@@ -46,7 +41,7 @@
 
 ### 性能
 
-**当前不是瓶颈，建议排在功能之后**：日常迭代只需要 `page`（130s），整轮 390s 也不算难受。
+**当前不是瓶颈，建议排在功能之后**：日常迭代只需要 `page`（130s），整轮 190s 也不算难受。
 而且这些改动动的正是 `Model.load()`，和功能开发撞车；`Main audit` 现在能自动验收「产物不变」，
 真要做的时候有工具了。
 
@@ -74,6 +69,9 @@
 - **历史背景**：走 Wikipedia 缓存（`Main wiki` → `manual/wiki/`），详见 memory 里的说明。
 - **搜索（基础版）**：构建期产 `output/{lang}/search-data.js`，前端 `search.js` 做标题子串匹配。
   ——见上面「建议优先做」第 1 条，还有较大改进空间。
+- **配置外部化**：四个机器相关路径进 `config.properties`（模板 `config.example.properties`），
+  83 条硬编码贴图目录换成扫描根目录自动发现——不会再因 mod 改名而失效。产物逐项不变，
+  且 `load()` 从 122s 降到 74s（每次图标查找少 stat 几十个目录）。
 - **产物 audit**：`view/Audit.java`，`page`/`after_init` 后自动跑，对比 `manual/audit-baseline.json`
   并标出变差的指标。
 - **手机版侧栏**：抽成 `output_android/{lang}/sidebar.js`（原本内联进每一页），加了首页入口和

@@ -12,7 +12,10 @@ mvn compile          # 仅编译（命令行）
 
 或在 VSCode 里用 Java 扩展自动编译。运行时实际用 JRE 8 跑（见 `.vscode/settings.json` 的 `JavaSE-1.8` 运行时配置）。
 
-> 数据库、游戏贴图等输入路径硬编码在 `tools/Constants.java`（`STEAM_FOLDER`、`DATABASES_SOURCE`、`DDS_FOLDERS` 等）。换机器/换游戏版本时需改这里。
+> **换机器**：复制 `config.example.properties` 为 `config.properties`，改里面四个路径即可
+> （Steam 库、Mods 目录、HD mod 的文件夹名、游戏 Cache 目录）。其余全部派生，贴图目录靠
+> 扫描这些根发现，不需要维护路径清单。不建 `config.properties` 就用 `tools/Config.java`
+> 里的默认值，即原来硬编码的那套。
 
 ## 2. 流水线与命令
 

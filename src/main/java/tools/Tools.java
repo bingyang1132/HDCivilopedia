@@ -3339,7 +3339,7 @@ public class Tools implements Constants {
                 fileName += ".dds";
             }
             File file = null;
-            for (String folder : DDS_FOLDERS) {
+            for (String folder : Constants.ddsFolders()) {
                 File f = new File(folder + "/" + fileName);
                 if (f.exists()) {
                     file = f;
