@@ -1029,7 +1029,7 @@ public class Page {
         pageFooter.appendChild(pageFooterDivider);
         pageFooterDivider.setAttribute("class", "pageFooterDivider");
 
-        appendSidebar(document, body, page.getString("language"));
+        appendSidebar(document, body);
         appendSearchScripts(document, body);
 
         return document;
@@ -1212,76 +1212,87 @@ public class Page {
         return btn;
     }
 
-    // slide-in sidebar listing every top-level chapter, linking to its TOC
-    public static Element getSidebar (Document document, String language) {
-        String lang = (language == null || language.isEmpty()) ? "en_US" : language;
-        Element sidebar = document.createElement("div");
-        sidebar.setAttribute("id", "pediaSidebar");
-        sidebar.setAttribute("class", "pediaSidebar");
+    /**
+     * Writes output_android/{language}/sidebar.js: the slide-in chapter list plus its open/close
+     * behaviour. Both used to be inlined into every page, which repeated the same ~4 KB into all
+     * 6000+ android pages — about a fifth of the mobile build, and a second copy of the script to
+     * keep in sync. Hrefs and icon srcs resolve against the page that loads this file, not against
+     * the file itself, so the "../../" depths are the same as when the markup was inlined.
+     */
+    public static void buildSidebarScript (String language) throws Exception {
+        StringBuilder html = new StringBuilder();
+        html.append("<div class=\"pediaSidebar\" id=\"pediaSidebar\">");
 
         // "index" is not one of HEADERS, so without this row the sidebar can reach every
         // chapter but never the pedia's own start page
-        Element home = document.createElement("a");
-        sidebar.appendChild(home);
-        home.setAttribute("class", "pediaSidebarItem pediaSidebarHome");
-        home.setAttribute("href", "../../index/index/toc.html");
-        home.setTextContent(Tools.getControlText("PediaHome", lang));
+        html.append("<a class=\"pediaSidebarItem pediaSidebarHome\" href=\"../../index/index/toc.html\">")
+                .append(Tools.getControlText("PediaHome", language))
+                .append("</a>");
 
         for (String chapter : HEADERS) {
-            Element a = document.createElement("a");
-            sidebar.appendChild(a);
-            a.setAttribute("class", "pediaSidebarItem");
-            // "../../" reaches the language dir from every android page (all 3 dirs deep)
-            a.setAttribute("href", "../../" + chapter + "/index/toc.html");
-
-            Element img = document.createElement("img");
-            a.appendChild(img);
-            img.setAttribute("class", "pediaSidebarIcon");
-            img.setAttribute("src", Tools.IMAGE_URL + "/ICON_CIVILOPEDIA_" + chapter.toUpperCase() + ".png");
-            img.setAttribute("alt", "");
-
-            Element span = document.createElement("span");
-            a.appendChild(span);
-            span.setTextContent(Tools.getControlText(chapter, lang));
+            html.append("<a class=\"pediaSidebarItem\" href=\"../../").append(chapter).append("/index/toc.html\">")
+                    .append("<img class=\"pediaSidebarIcon\" alt=\"\" src=\"")
+                    .append(Tools.IMAGE_URL).append("/ICON_CIVILOPEDIA_").append(chapter.toUpperCase()).append(".png\">")
+                    .append("<span>").append(Tools.getControlText(chapter, language)).append("</span>")
+                    .append("</a>");
         }
-        return sidebar;
-    }
+        html.append("</div>");
+        html.append("<div class=\"pediaSidebarOverlay\" id=\"pediaSidebarOverlay\"></div>");
 
-    // appends the hamburger, sidebar, dimming overlay and toggle script to an android body
-    public static void appendSidebar (Document document, Element body, String language) {
-        body.appendChild(getSidebarToggle(document));
-        body.appendChild(getSidebar(document, language));
-
-        Element overlay = document.createElement("div");
-        body.appendChild(overlay);
-        overlay.setAttribute("id", "pediaSidebarOverlay");
-        overlay.setAttribute("class", "pediaSidebarOverlay");
-        overlay.setAttribute("onclick", "pediaToggleSidebar()");
-        overlay.setTextContent(" ");
-
-        // The overlay's onclick closes the sidebar on a normal browser, but a WebView that
-        // does not synthesise a click from a tap would strand the user with no way back, so
-        // bind touchstart too. Opening also pushes a history entry, letting the phone's back
-        // button close the sidebar instead of leaving the page.
-        // NB: writeDocumentToFile only un-escapes &lt;/&gt;, so this source must not contain
-        // '&', '<' or '>' — the transformer would turn them into entities and break the JS.
-        Element script = document.createElement("script");
-        body.appendChild(script);
-        script.setTextContent(
-                "function pediaSetSidebar(open){"
+        // The overlay's click handler closes the sidebar on a normal browser, but a WebView that
+        // does not synthesise a click from a tap would strand the user with no way back, so bind
+        // touchstart too. Opening also pushes a history entry, letting the phone's back button
+        // close the sidebar instead of leaving the page.
+        String js = "(function(){"
+                + "var wrap=document.createElement('div');"
+                + "wrap.innerHTML='" + toJsString(html.toString()) + "';"
+                + "while(wrap.firstChild){document.body.appendChild(wrap.firstChild);}"
                 + "var s=document.getElementById('pediaSidebar');"
                 + "var o=document.getElementById('pediaSidebarOverlay');"
+                + "function set(open){"
                 + "if(open===s.classList.contains('open')){return;}"
                 + "s.classList.toggle('open',open);"
                 + "o.style.display=open?'block':'none';}"
-                + "function pediaToggleSidebar(){"
-                + "var open=!document.getElementById('pediaSidebar').classList.contains('open');"
-                + "pediaSetSidebar(open);"
+                + "window.pediaToggleSidebar=function(){"
+                + "var open=!s.classList.contains('open');"
+                + "set(open);"
                 + "try{if(open){history.pushState({pediaSidebar:1},'');}"
-                + "else{var st=history.state;if(st){if(st.pediaSidebar){history.back();}}}}catch(e){}}"
-                + "window.addEventListener('popstate',function(){pediaSetSidebar(false);});"
-                + "document.getElementById('pediaSidebarOverlay').addEventListener('touchstart',"
-                + "function(e){e.preventDefault();pediaToggleSidebar();},false);");
+                + "else if(history.state&&history.state.pediaSidebar){history.back();}}catch(e){}};"
+                + "o.addEventListener('click',function(){window.pediaToggleSidebar();});"
+                + "o.addEventListener('touchstart',function(e){e.preventDefault();window.pediaToggleSidebar();},false);"
+                + "window.addEventListener('popstate',function(){set(false);});"
+                + "})();";
+        writeTextToFile(js, new File("output_android/" + language + "/sidebar.js"));
+    }
+
+    // escapes a string for a single-quoted JS literal; non-ASCII becomes \\uXXXX so the
+    // generated .js is charset-independent (search-data.js relies on the same property)
+    static String toJsString (String s) {
+        StringBuilder out = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            if (c == '\\' || c == '\'') {
+                out.append('\\').append(c);
+            } else if (c < 128) {
+                out.append(c);
+            } else {
+                out.append(String.format("\\u%04x", (int) c));
+            }
+        }
+        return out.toString();
+    }
+
+    // appends the hamburger and a reference to the per-language sidebar script; the sidebar
+    // and its overlay are injected by that script (see buildSidebarScript). The button stays
+    // in the markup so the affordance is there before the script runs.
+    public static void appendSidebar (Document document, Element body) {
+        body.appendChild(getSidebarToggle(document));
+
+        Element script = document.createElement("script");
+        body.appendChild(script);
+        // "../../" reaches the language dir (output_android/{lang}/) from every page
+        script.setAttribute("src", "../../sidebar.js");
+        script.setTextContent(" "); // force a closing tag; empty <script src/> breaks HTML parsing
     }
 
     /** Appends the per-language data file and shared behaviour script to a page body. */
@@ -1395,6 +1406,9 @@ public class Page {
         copyFiles(new File("json"), new File("temp"));
         copyFiles(new File("manual/json"), new File("temp"));
         deleteFilesExcept(new File("output"), "icons");
+        // output_android was never cleared, so pages for content the mod has since renamed or
+        // removed stayed behind for good; this first sweep dropped 1570 of them
+        deleteFilesExcept(new File("output_android"), "icons");
         copyFiles(new File("output"), new File("output_android"));
         for (String language : LANGUAGES) {
 
@@ -1418,6 +1432,7 @@ public class Page {
             writeDocumentToFile(document, target);
 
             buildSearchIndex(language);
+            buildSidebarScript(language);
         }
         deleteFiles(new File("temp"));
         copyFiles(new File("manual/output"), new File("output"));
