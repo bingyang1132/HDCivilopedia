@@ -24,8 +24,10 @@ public interface Constants {
     public static final String CONFIG_DATABASE = DATABASES + "/" + "DebugConfiguration.sqlite";  // 原来少了这么一个db 
     public static final String NOHD_TEXT_DATABASE = DATABASES + "/" + "nohd_DebugLocalization.sqlite";
 
+    public static final String HD_MOD = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity";
+
     // changelog
-    public static final String CHANGELOG = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/Civ6HarmonyInDiversity/Changelog";
+    public static final String CHANGELOG = HD_MOD + "/Changelog";
     
     public static final String PLAYER_COLORS = STEAM_FOLDER + "/" + "common/Sid Meier's Civilization VI/Base/Assets/UI/Colors";
     public static final String EXTRA_SCH = "extra.sql";
@@ -145,7 +147,31 @@ public interface Constants {
                 folders.add(dds2.getAbsolutePath());
             }
         }
+        // The HD mod's own art folders are listed above one by one, which goes stale every time
+        // the mod adds one -- Assets/Resources, Assets/Districts and six others were missing, so
+        // 56 .dds were unreachable and their icons silently disappeared. Walk its tree instead.
+        addFoldersWithDDS(new File(HD_MOD + "/Assets"), folders);
         return folders;
+    }
+
+    /** Adds every directory under {@code root} that directly contains a .dds. */
+    // Constants is an interface, so this cannot be private on Java 8
+    static void addFoldersWithDDS (File root, List<String> folders) {
+        if (!root.isDirectory()) {
+            return;
+        }
+        File[] children = root.listFiles();
+        if (children == null) {
+            return;
+        }
+        for (File child : children) {
+            if (child.isDirectory()) {
+                addFoldersWithDDS(child, folders);
+            } else if (child.getName().toLowerCase().endsWith(".dds")
+                    && !folders.contains(root.getAbsolutePath())) {
+                folders.add(root.getAbsolutePath());
+            }
+        }
     }
 
     public static final String IMAGE_URL = "../../../icons";
