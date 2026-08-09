@@ -42,12 +42,17 @@ public class WikiFetcher {
         return language.startsWith("zh") ? "zh" : "en";
     }
 
-    public static void fetchAll(int limitPerType) {
+    static List<Writable> targets(int limitPerType) {
         List<Writable> targets = new ArrayList<>();
         addAll(targets, Civilization.civilizations.values(), limitPerType);
         addAll(targets, Leader.leaders.values(), limitPerType);
         addAll(targets, GreatPerson.greatpeople.values(), limitPerType);
         addAll(targets, Wonder.wonders.values(), limitPerType);
+        return targets;
+    }
+
+    public static void fetchAll(int limitPerType) {
+        List<Writable> targets = targets(limitPerType);
 
         // manual corrections for entries that auto-matching missed (see _failures.tsv);
         // key = "language\ttag", value = exact wikipedia article title to use
@@ -110,6 +115,84 @@ public class WikiFetcher {
         writeFailures(failures);
         System.out.println("wiki fetch done: ok=" + ok + " skipped=" + skip + " failed=" + fail
                 + " (see manual/wiki/_failures.tsv)");
+    }
+
+    /**
+     * Re-fetches cached entries in place so a change to what we ask Wikipedia for (the zh
+     * variant, see acceptLang) reaches text that is already on disk — fetchAll skips existing
+     * files by design, so it would never pick that up.
+     *
+     * It deliberately does NOT re-resolve names: each entry is re-fetched by the exact article
+     * its cache file already records, so this can only change the wording of an entry, never
+     * which article it points at. An entry is left untouched if the fetch fails (the old text
+     * stays), if it is PINned or carries a "source" (Baidu, hand-translated — there is no API
+     * behind those), or if its text comes back identical.
+     */
+    public static void refreshAll() {
+        List<Writable> targets = targets(0);
+        Map<String, String> overrides = readOverrides();
+        // reported on stdout, not into _failures.tsv: that file is fetchAll's list of entries
+        // with no article yet, and a refresh miss is transient — the old text is still there,
+        // and re-running the command retries it
+        List<String> failures = new ArrayList<>();
+        int ok = 0, same = 0, skip = 0, fail = 0;
+        for (String language : LANGUAGES) {
+            // only the languages we ask a variant for need this; re-fetching en would just pull
+            // in unrelated upstream edits
+            if (acceptLang(wikiLang(language)) == null) {
+                continue;
+            }
+            for (Writable w : targets) {
+                File out = new File("manual/wiki/" + language + "/" + w.tag + ".json");
+                String override = overrides.get(language + "\t" + w.tag);
+                if (!out.exists() || (override != null && override.trim().equalsIgnoreCase("PIN"))) {
+                    skip++;
+                    continue;
+                }
+                JSONObject old;
+                try {
+                    old = Tools.readJSON(out);
+                } catch (Exception e) {
+                    old = null;
+                }
+                String url = old == null ? null : old.getString("url");
+                String host = hostOf(url);
+                if (host == null || !host.endsWith("wikipedia.org") || old.getString("source") != null) {
+                    skip++;
+                    continue;
+                }
+                String wl = host.substring(0, host.indexOf('.'));
+                JSONObject fresh = extract(wl, titleFromOverride(url), w instanceof Civilization);
+                sleep(120);
+                if (fresh == null) {
+                    failures.add(language + " " + w.tag);
+                    fail++;
+                    continue;
+                }
+                if (fresh.getString("text").equals(old.getString("text"))) {
+                    same++;
+                    continue;
+                }
+                writeJson(fresh, out);
+                ok++;
+            }
+        }
+        System.out.println("wiki refresh done: updated=" + ok + " unchanged=" + same
+                + " skipped=" + skip + " failed=" + fail);
+        if (!failures.isEmpty()) {
+            System.out.println("  kept the old text for these, re-run to retry: " + failures);
+        }
+    }
+
+    static String hostOf(String url) {
+        if (url == null || !url.contains("://")) {
+            return null;
+        }
+        try {
+            return new URL(url).getHost();
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     static void addAll(List<Writable> targets, java.util.Collection<? extends Writable> src, int limit) {
@@ -241,9 +324,11 @@ public class WikiFetcher {
         return s.replaceAll("\\[\\d+\\]", "").replaceAll("\\[[a-zA-Z]\\]", "").replaceAll("\\[注[^\\]]*\\]", "");
     }
 
-    // zh.wikipedia serves mixed/traditional text by default; request the Simplified variant
+    // zh.wikipedia serves mixed/traditional text by default; request the mainland variant.
+    // zh-cn rather than zh-hans: zh-hans converts characters only, so regional terms come
+    // through in their Taiwan form (鄂图曼帝国, 大部份). zh-cn converts those too.
     static String acceptLang(String wl) {
-        return "zh".equals(wl) ? "zh-hans" : null;
+        return "zh".equals(wl) ? "zh-cn" : null;
     }
 
     static JSONObject summary(String wl, String title) {

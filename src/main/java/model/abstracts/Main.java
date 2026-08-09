@@ -137,8 +137,14 @@ public class Main {
             } else if (cmd.equals("wiki")) {
                 System.out.println("loading...");
                 load();
-                System.out.println("fetching wikipedia history...");
-                tools.WikiFetcher.fetchAll(args.length >= 2 ? Integer.parseInt(args[1]) : 0);
+                // `wiki refresh` re-fetches what is already cached, in place; `wiki [n]` fills gaps
+                if (args.length >= 2 && args[1].equals("refresh")) {
+                    System.out.println("refreshing cached wiki history...");
+                    tools.WikiFetcher.refreshAll();
+                } else {
+                    System.out.println("fetching wikipedia history...");
+                    tools.WikiFetcher.fetchAll(args.length >= 2 ? Integer.parseInt(args[1]) : 0);
+                }
             } else if (cmd.equals("build")) {
                 buildChangelog(args[1], args.length >= 3 ? args[2] : "v" + args[1]);
             } else if (cmd.equals("after_init")) {
