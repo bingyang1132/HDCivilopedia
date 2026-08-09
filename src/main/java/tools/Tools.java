@@ -326,6 +326,18 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "WikiSourceTranslated": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "来源：英文维基百科（译文）";
+                    }
+                    case "en_US": {
+                        return "Source: Wikipedia (translated)";
+                    }
+                }
+                break;
+            }
             case "Quotes": {
                 switch (language) {
                     case "zh_Hans":
@@ -2899,7 +2911,13 @@ public class Tools implements Constants {
             String body = text.trim();
             String url = o.getString("url");
             if (url != null && !url.isEmpty()) {
-                String source = "baidu".equals(o.getString("source")) ? "BaiduSource" : "WikiSource";
+                String source = "WikiSource";
+                if ("baidu".equals(o.getString("source"))) {
+                    source = "BaiduSource";
+                } else if ("wiki_translated".equals(o.getString("source"))) {
+                    // hand-translated from the English article, for subjects zh.wikipedia lacks
+                    source = "WikiSourceTranslated";
+                }
                 body += "[NEWLINE]<a href=\"" + url + "\" target=\"_blank\">" + getControlText(source, language) + "</a>";
             }
             return body;

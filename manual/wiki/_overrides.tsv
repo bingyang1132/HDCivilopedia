@@ -5,9 +5,11 @@
 # To skip an entry (e.g. the HD_CODIFIER_* placeholders, which are not real people): delete the line or clear its 3rd column.
 #   value = SKIP  -> delete any cached file, fall back to the game's own civilopedia history
 #   value = PIN   -> the cached file is hand-maintained; never fetch or overwrite it (see 中国 at the bottom)
-# Verified format examples (already fetched, kept commented for reference):
+# Format examples:
 #   zh_Hans_CN	CIVILIZATION_MACEDON	马其顿王国
 #   zh_Hans_CN	LEADER_PHILIP_II	腓力二世 (西班牙)
+# (both of the above were commented out here and marked "already fetched" — they never were,
+#  so both entries silently used the game's own text until they were added as real rows below.)
 zh_Hans_CN	CIVILIZATION_ARABIA	https://zh.wikipedia.org/wiki/阿拉伯帝国
 zh_Hans_CN	CIVILIZATION_KOREA	https://zh.wikipedia.org/wiki/%E6%9C%9D%E9%B2%9C%E7%8E%8B%E6%9C%9D
 zh_Hans_CN	LEADER_CHANDRAGUPTA	https://zh.wikipedia.org/wiki/%E6%97%83%E9%99%80%E7%BD%97%E7%AC%88%E5%A4%9A_(%E5%AD%94%E9%9B%80%E7%8E%8B%E6%9C%9D)
@@ -102,7 +104,6 @@ zh_Hans_CN	LEADER_BASIL	巴西尔二世
 zh_Hans_CN	LEADER_CATHERINE_DE_MEDICI_ALT	凯瑟琳·德·美第奇
 zh_Hans_CN	LEADER_CVS_DIHYA	卡希纳
 zh_Hans_CN	LEADER_ELEANOR_ENGLAND	阿基坦的埃莉诺
-zh_Hans_CN	LEADER_GEDEMO_MUTOTA	SKIP
 zh_Hans_CN	LEADER_HARDRADA	哈拉尔三世 (挪威)
 zh_Hans_CN	LEADER_HARALD_ALT	蓝牙王哈拉尔
 zh_Hans_CN	LEADER_LEU_PACAL	巴加尔二世
@@ -210,8 +211,23 @@ en_US	LEADER_TOKUGAWA	Tokugawa Ieyasu
 en_US	LEADER_VICTORIA	Queen Victoria
 en_US	LEADER_VICTORIA_ALT	Queen Victoria
 en_US	LEADER_WILHELMINA	Wilhelmina of the Netherlands
-# 中文维基查过了，确实没有这四位本人的条目——只有他们所属的王国/民族（库施王国、克里人、
-# 基尔瓦苏丹国），拿来当人物简介是错的匹配。这四位保留游戏自带文本。
-zh_Hans_CN	LEADER_AMANITORE	SKIP
+# 中文维基确实没有这四位本人的条目——只有他们所属的王国/民族（库施王国、克里人、基尔瓦苏丹国），
+# 拿来当人物简介是错的匹配。前三位英文维基有条目，正文是照英文首段人工译成中文的，因此走 PIN：
+# 文件手工维护、不抓不覆盖，来源链接指向英文条目并标注「译文」。
+zh_Hans_CN	LEADER_AMANITORE	PIN
+zh_Hans_CN	LEADER_GEDEMO_MUTOTA	PIN
+zh_Hans_CN	LEADER_SUK_AL_HASAN	PIN
+# 庞德梅克两边都没有条目，保留游戏自带文本。
 zh_Hans_CN	LEADER_POUNDMAKER	SKIP
-zh_Hans_CN	LEADER_SUK_AL_HASAN	SKIP
+
+# --- 文明：游戏名是简称，条目在全称下面（每条实抓验证过）---
+zh_Hans_CN	CIVILIZATION_KONGO	刚果王国
+zh_Hans_CN	CIVILIZATION_MACEDON	马其顿王国
+zh_Hans_CN	CIVILIZATION_MAORI	毛利人
+zh_Hans_CN	CIVILIZATION_MAPUCHE	马普切人
+zh_Hans_CN	CIVILIZATION_MAYA	玛雅文明
+zh_Hans_CN	CIVILIZATION_OTTOMAN	奥斯曼帝国
+en_US	CIVILIZATION_KHMER	Khmer Empire
+en_US	CIVILIZATION_KONGO	Kingdom of Kongo
+en_US	CIVILIZATION_MAORI	Māori people
+en_US	CIVILIZATION_OTTOMAN	Ottoman Empire
