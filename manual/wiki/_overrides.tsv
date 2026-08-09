@@ -3,6 +3,8 @@
 #   value = exact Wikipedia article title  (e.g. 阿拉伯帝国)  OR  a full URL  (e.g. https://zh.wikipedia.org/wiki/阿拉伯帝国)
 # The 3rd column below is the game name that FAILED to auto-match — REPLACE it with the correct title/URL.
 # To skip an entry (e.g. the HD_CODIFIER_* placeholders, which are not real people): delete the line or clear its 3rd column.
+#   value = SKIP  -> delete any cached file, fall back to the game's own civilopedia history
+#   value = PIN   -> the cached file is hand-maintained; never fetch or overwrite it (see 中国 at the bottom)
 # Verified format examples (already fetched, kept commented for reference):
 #   zh_Hans_CN	CIVILIZATION_MACEDON	马其顿王国
 #   zh_Hans_CN	LEADER_PHILIP_II	腓力二世 (西班牙)
@@ -95,7 +97,6 @@ zh_Hans_CN	WON_CL_KINKAKU	鹿苑寺
 zh_Hans_CN	CIVILIZATION_CREE	克里族
 zh_Hans_CN	CIVILIZATION_KHMER	高棉帝国
 zh_Hans_CN	CIVILIZATION_SUK_SWAHILI	斯瓦希里人
-zh_Hans_CN	LEADER_AMANITORE	阿曼尼托雷
 zh_Hans_CN	LEADER_ALEXANDER	亚历山大大帝
 zh_Hans_CN	LEADER_BASIL	巴西尔二世
 zh_Hans_CN	LEADER_CATHERINE_DE_MEDICI_ALT	凯瑟琳·德·美第奇
@@ -105,16 +106,13 @@ zh_Hans_CN	LEADER_GEDEMO_MUTOTA	SKIP
 zh_Hans_CN	LEADER_HARDRADA	哈拉尔三世 (挪威)
 zh_Hans_CN	LEADER_HARALD_ALT	蓝牙王哈拉尔
 zh_Hans_CN	LEADER_LEU_PACAL	巴加尔二世
-zh_Hans_CN	LEADER_POUNDMAKER	庞德梅克
-zh_Hans_CN	LEADER_SUK_AL_HASAN	SKIP
-zh_Hans_CN	LEADER_TAMAR	塔玛拉 (格鲁吉亚)
 zh_Hans_CN	LEADER_T_ROOSEVELT_ROUGHRIDER	西奥多·罗斯福
 zh_Hans_CN	LEADER_VICTORIA	维多利亚女王
 zh_Hans_CN	LEADER_VICTORIA_ALT	维多利亚女王
 zh_Hans_CN	LEADER_WU_ZETIAN	武则天
 zh_Hans_CN	LEADER_YONGLE	明成祖
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ABU_AL_QASIM_AL_ZAHRAWI	宰赫拉威
-zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ANA_NZINGA	恩津加·姆班迪
+zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ANA_NZINGA	恩津加
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ANDREY_RUBLEV	SKIP
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ANGELICA_KAUFFMAN	安杰丽卡·考夫曼
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ANTONIO_CARLOS_GOMEZ	卡洛斯·戈梅斯
@@ -175,3 +173,45 @@ zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_VIJAYA_WIMALARATNE	SKIP
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_YATSUHASHI_KENGYO	SKIP
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_XIAO_LUAN_HD	SKIP
 zh_Hans_CN	GREAT_PERSON_INDIVIDUAL_ZHU_BI_SHAN_HD	SKIP
+
+# --- 中国：改用百度百科（维基那条侧重政体沿革，百科要的是文明本身）---
+# PIN = 该文件手工维护，Main wiki 不抓也不覆盖；文件丢了会记进 _failures.tsv 而不是悄悄退回维基。
+# 百度百科没有 API，而且从 Java 发请求一律 403（换 UA/Accept 都没用，curl 同样的请求 200，
+# 是 WAF 在认 TLS 指纹），所以正文是用 curl 取 J-summary 段、剥标签后写进 json 的。
+# 要更新的话：curl 那个 url，取 J-summary 到 J-catalog 之间的文本，保留 source":"baidu"。
+zh_Hans_CN	CIVILIZATION_CHINA	PIN
+
+# --- 领袖：补齐剩下没抓到的条目（希望领袖页一律用抓来的百科文本，不用游戏自带的）---
+# 带 persona 后缀的名字（嬴政（受命于天）、Victoria (Age of Steam)）现在由代码自动去括号重试，
+# 不需要写在这里。下面这些是游戏译名和维基条目名不一致、必须指定的。每一条都实抓验证过。
+zh_Hans_CN	LEADER_BARBAROSSA	腓特烈一世 (神圣罗马帝国)
+zh_Hans_CN	LEADER_CLEOPATRA	克娄巴特拉七世
+zh_Hans_CN	LEADER_CLEOPATRA_ALT	克娄巴特拉七世
+zh_Hans_CN	LEADER_CYRUS	居鲁士二世
+zh_Hans_CN	LEADER_GENGHIS_KHAN	成吉思汗
+zh_Hans_CN	LEADER_JOHN_CURTIN	约翰·柯廷
+zh_Hans_CN	LEADER_KRISTINA	克里斯蒂娜女王
+zh_Hans_CN	LEADER_KUBLAI_KHAN_CHINA	忽必烈
+zh_Hans_CN	LEADER_KUBLAI_KHAN_MONGOLIA	忽必烈
+zh_Hans_CN	LEADER_MER_SUPPILULIUMA	苏庇路里乌玛一世
+zh_Hans_CN	LEADER_MONTEZUMA	蒙特苏马一世
+zh_Hans_CN	LEADER_NZINGA_MBANDE	恩津加
+zh_Hans_CN	LEADER_PHILIP_II	腓力二世 (西班牙)
+zh_Hans_CN	LEADER_SULEIMAN	苏莱曼一世 (奥斯曼帝国)
+zh_Hans_CN	LEADER_SULEIMAN_ALT	苏莱曼一世 (奥斯曼帝国)
+zh_Hans_CN	LEADER_TAMAR	塔玛尔
+zh_Hans_CN	LEADER_T_ROOSEVELT	西奥多·罗斯福
+en_US	LEADER_CHANDRAGUPTA	Chandragupta Maurya
+en_US	LEADER_GENGHIS_KHAN	Genghis Khan
+en_US	LEADER_GORGO	Gorgo, Queen of Sparta
+en_US	LEADER_PHILIP_II	Philip II of Spain
+en_US	LEADER_SEONDEOK	Queen Seondeok of Silla
+en_US	LEADER_TOKUGAWA	Tokugawa Ieyasu
+en_US	LEADER_VICTORIA	Queen Victoria
+en_US	LEADER_VICTORIA_ALT	Queen Victoria
+en_US	LEADER_WILHELMINA	Wilhelmina of the Netherlands
+# 中文维基查过了，确实没有这四位本人的条目——只有他们所属的王国/民族（库施王国、克里人、
+# 基尔瓦苏丹国），拿来当人物简介是错的匹配。这四位保留游戏自带文本。
+zh_Hans_CN	LEADER_AMANITORE	SKIP
+zh_Hans_CN	LEADER_POUNDMAKER	SKIP
+zh_Hans_CN	LEADER_SUK_AL_HASAN	SKIP

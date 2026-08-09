@@ -68,6 +68,20 @@ public class WikiFetcher {
                     skip++;
                     continue;
                 }
+                // PIN sentinel: the file is hand-maintained, never fetch or overwrite it. Used
+                // where the source is not a wiki we can call — 中国 takes its lead from Baidu
+                // Baike, which 403s every request from Java (WAF fingerprinting, not headers;
+                // the same request from curl returns 200). A missing PIN file is reported as a
+                // failure rather than silently falling back to the Wikipedia article.
+                if (override != null && override.trim().equalsIgnoreCase("PIN")) {
+                    if (out.exists()) {
+                        skip++;
+                    } else {
+                        failures.add(language + "\t" + w.tag + "\t(PIN, but the file is missing)");
+                        fail++;
+                    }
+                    continue;
+                }
                 // already fetched and no correction pending -> skip (resumable)
                 if (out.exists() && override == null) {
                     skip++;
@@ -82,7 +96,7 @@ public class WikiFetcher {
                 }
                 JSONObject result = (override != null && !override.isEmpty())
                         ? resolveOverride(wl, override, longIntro)
-                        : autoFetch(wl, name, longIntro);
+                        : autoFetch(wl, name, longIntro, w instanceof Leader);
                 sleep(120);
                 if (result == null) {
                     failures.add(language + "\t" + w.tag + "\t" + (override != null && !override.isEmpty() ? override : name));
@@ -111,7 +125,8 @@ public class WikiFetcher {
 
     // an override value is either a bare article title (use the row's language wiki) or a full
     // URL. For a wikipedia URL the wiki language comes from the host (zh./en.…); non-wikipedia
-    // hosts (e.g. Baidu Baike) are unsupported and return null so the entry is logged.
+    // hosts are unsupported and return null so the entry is logged. (Baidu Baike specifically
+    // cannot be fetched from Java at all — see the PIN sentinel in fetchAll.)
     static JSONObject resolveOverride(String rowWl, String override, boolean longIntro) {
         String s = override.trim();
         if (s.contains("://")) {
@@ -161,8 +176,23 @@ public class WikiFetcher {
     // resolve strictly by the exact article title (the localized name). The old search
     // fallback returned garbage for obscure names (an Icelandic lawspeaker -> a footballer),
     // so a miss now returns null and the page falls back to the game's own history.
-    static JSONObject autoFetch(String wl, String name, boolean longIntro) {
-        return extract(wl, name, longIntro);
+    //
+    // Leaders get one extra attempt: their display name carries the persona epithet
+    // (嬴政（受命于天）, Victoria (Age of Steam)), while the article is under the bare name —
+    // and both personas of a leader legitimately share that one article. This retry is limited
+    // to leaders on purpose: for great people a bare-name guess is exactly how the old search
+    // fallback produced wrong matches.
+    static JSONObject autoFetch(String wl, String name, boolean longIntro, boolean persona) {
+        JSONObject o = extract(wl, name, longIntro);
+        if (o != null || !persona) {
+            return o;
+        }
+        String bare = dropEpithet(name);
+        return bare.isEmpty() || bare.equals(name) ? null : extract(wl, bare, longIntro);
+    }
+
+    static String dropEpithet(String name) {
+        return name.replaceAll("（[^（）]*）", "").replaceAll("\\s*\\([^()]*\\)", "").trim();
     }
 
     // short lead (REST summary) or, for longIntro, the full lead section via the query API.

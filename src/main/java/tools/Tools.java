@@ -314,6 +314,18 @@ public class Tools implements Constants {
                 }
                 break;
             }
+            case "BaiduSource": {
+                switch (language) {
+                    case "zh_Hans":
+                    case "zh_Hans_CN": {
+                        return "来源：百度百科";
+                    }
+                    case "en_US": {
+                        return "Source: Baidu Baike";
+                    }
+                }
+                break;
+            }
             case "Quotes": {
                 switch (language) {
                     case "zh_Hans":
@@ -2870,8 +2882,9 @@ public class Tools implements Constants {
         return history;
     }
 
-    // scraped wikipedia history for an entity (需求2), read from manual/wiki/{lang}/{tag}.json;
-    // null if not fetched. A source-attribution link (CC BY-SA) is appended.
+    // scraped encyclopedia history for an entity (需求2), read from manual/wiki/{lang}/{tag}.json;
+    // null if not fetched. A source-attribution link is appended — Wikipedia (CC BY-SA) unless
+    // the cache file names another source.
     public static String getWikiHistory(String tag, String language) {
         File f = new File("manual/wiki/" + language + "/" + tag + ".json");
         if (!f.exists()) {
@@ -2886,7 +2899,8 @@ public class Tools implements Constants {
             String body = text.trim();
             String url = o.getString("url");
             if (url != null && !url.isEmpty()) {
-                body += "[NEWLINE]<a href=\"" + url + "\" target=\"_blank\">" + getControlText("WikiSource", language) + "</a>";
+                String source = "baidu".equals(o.getString("source")) ? "BaiduSource" : "WikiSource";
+                body += "[NEWLINE]<a href=\"" + url + "\" target=\"_blank\">" + getControlText(source, language) + "</a>";
             }
             return body;
         } catch (Exception e) {
