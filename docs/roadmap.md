@@ -229,9 +229,18 @@ CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wi
 既是给人看的，也是给 Agent 看的；重构完跑一遍就知道有没有搞砸。计划中的 changelog 系统
 是第二个实例：脚本产出结构化变更集，Agent 负责措辞与对齐，覆盖率数字兜底。
 
-开源前要处理的：`config.properties` 已经隔离了机器路径（模板在 `config.example.properties`），
-但仓库里还有 `.vscode/settings.json`、`manual/wiki/` 的抓取缓存等需要过一遍；
-另外 `docs/` 目前是中文，面向外部读者可能需要一份英文说明。
+开源前要处理的：
+
+1. **授权**——上游仓库没有 LICENSE，公开衍生作品需要先取得授权。**这条是硬前置**，
+   详见 [upstream-differences.md](upstream-differences.md) 的授权状态一节。
+2. `manual/wiki/` 是维基百科（CC BY-SA）与百度百科正文首段的缓存，公开前要决定怎么处理。
+3. `config.properties` 已隔离机器路径（模板 `config.example.properties`），
+   但 `.vscode/settings.json` 之类还需要过一遍。
+4. `docs/` 目前全中文，面向外部读者可能需要一份英文说明。
+
+贡献边界已经写清楚了：[upstream-differences.md](upstream-differences.md) 记录了分叉点、
+逐项改动、以及自行复核 diff 的命令——**本仓库的 git 历史不含上游提交**（clean import 时丢了），
+所以这份文档是唯一的溯源链。
 
 ---
 
