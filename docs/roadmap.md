@@ -79,8 +79,9 @@ xhh.txt        171 行   6 个 version
 #### 前置：归档自动化 —— **已完成**
 
 `tools/Archive.java`，`page` / `after_init` 跑完自动执行，也可以 `Main archive` 单独跑。
-写到 `archive.folder`（config.properties，不配就跳过）下的 `snapshots/<yyyyMMdd>/`，
-**同一天只保留当天最后一次**，和顶层那 20 个手工发布归档分开放。一次 15~17s、65 MB：
+写到 `archive.folder`（config.properties，不配就跳过）下的 `HDCivilopedia_<yyyyMMdd>/`，
+**同一天只保留当天最后一次**。命名和手工归档一致，整段历史是一个序列，
+diff 脚本不用区分自动的还是手工的。一次 15~23s、65 MB：
 
 - `json/` 原样复制（21 MB）——**diff 的正源**。HTML 不好 diff（一个数值变化牵动一堆
   `<span>`/`<a>`/表格标记），历史那 20 个只有 HTML，只能走「剥标签取正文再比」的路径
@@ -88,6 +89,9 @@ xhh.txt        171 行   6 个 version
   （122 MB 逐字节不变的二进制，纯噪音）。HTML 压缩比约 15:1，两个 zip 共 56 MB 而不是 690 MB
 - `manifest.json` 记 `pediaCommit`——两个快照的差异可能来自 mod 变了，也可能来自**生成器变了**，
   diff 自己分不出来，得靠这个字段
+
+**只删自己写的那四项**（`json/`、两个 zip、`manifest.json`），不递归清目标目录。
+因为和手工归档同名同级，撞上当天已有的发布归档时，递归删会连里面的 zip 和 apk 一起删掉。
 
 #### 脚本与 skill 的边界
 
@@ -119,7 +123,7 @@ skill/    读摘要 + 公告 → 起草条目 → 校验 [] 实体链接能否�
 #### 落地顺序
 
 1. ~~先做归档自动化（含 `json/`）~~ **已完成，见上。** 注意新旧快照形状不同：
-   `snapshots/<日期>/` 有 `json/`，顶层那 20 个只有 HTML。
+   新的有 `json/` 和压缩的 HTML，旧的那 20 个是解开的 `output/`、且只有 HTML。
 2. 写脚本，拿 `HDCivilopedia_20260702` 和 `HDCivilopedia_20260807` 试
    （间隔一个多月，页数 10412 → 9606，其中约 800 页是我们清掉的孤儿页）。
    **看到真实变更集之后再定 schema**，比现在凭空设计准得多。

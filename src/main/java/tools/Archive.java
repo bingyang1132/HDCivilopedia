@@ -16,7 +16,7 @@ import java.util.zip.ZipOutputStream;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * Snapshots each run's artifacts under {@code archive.folder}, one snapshot per day.
+ * Snapshots each run's artifacts into {@code archive.folder/HDCivilopedia_<yyyyMMdd>}, one per day.
  *
  * The point is the changelog rebuild (see docs/roadmap.md): diffing two snapshots gives the
  * player-visible change set by construction — a pure refactor produces an empty diff, a
@@ -59,15 +59,20 @@ public class Archive {
         }
 
         String date = new SimpleDateFormat("yyyyMMdd").format(new Date());
-        // one directory per day, the last run of the day wins. Snapshots live in their own
-        // subfolder so they stay separate from the hand-made release archives at the top level.
-        File dir = new File(base, "snapshots/" + date);
-        if (dir.exists()) {
-            delete(dir);
-        }
-        if (!dir.mkdirs()) {
+        // One directory per day, the last run of the day wins, named the way the hand-made
+        // archives already are (HDCivilopedia_20260807) so the whole history reads as one series
+        // and the diff script needs no special case for which half it is looking at.
+        File dir = new File(base, "HDCivilopedia_" + date);
+        if (!dir.isDirectory() && !dir.mkdirs()) {
             throw new IOException("could not create " + dir.getPath());
         }
+        // only ever remove what this class writes. Sharing the naming means the target can be a
+        // hand-made release archive with a zip and an apk in it, and a recursive wipe of the day's
+        // folder would take those with it; anything else already in there is left alone.
+        delete(new File(dir, "json"));
+        delete(new File(dir, "output-html.zip"));
+        delete(new File(dir, "output_android-html.zip"));
+        delete(new File(dir, "manifest.json"));
 
         long start = System.nanoTime();
         int json = copy(new File("json"), new File(dir, "json"));
@@ -162,6 +167,9 @@ public class Archive {
     }
 
     private static void delete (File file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
         if (file.isDirectory()) {
             for (File child : children(file)) {
                 delete(child);
