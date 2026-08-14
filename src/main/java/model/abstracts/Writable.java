@@ -124,16 +124,7 @@ public abstract class Writable {
             if (!chapterFolder.exists()) {
                 chapterFolder.mkdirs();
             }
-            File contentsFile = new File(chapterFolder, "contents.json");
-            JSONObject contents;
-            if (contentsFile.exists()) {
-                contents = Tools.readJSON(contentsFile);
-            } else {
-                contents = new JSONObject();
-                contents.put("path", language + "/" + getChapter());
-                contents.put("name", Tools.getControlText(getChapter(), language));
-                contents.put("folders", new JSONArray());
-            }
+            JSONObject contents = contents(language, getChapter());
             JSONArray folders = contents.getJSONArray("folders");
 
             // write the page json once, into the canonical folder
@@ -183,12 +174,55 @@ public abstract class Writable {
                 }
             }
 
-            Tools.writeJson(contents, contentsFile);
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error writing jsons.");
             System.err.println(e.getClass().getName() + " " + e.getMessage());
         }
+    }
+
+    /**
+     * Chapter index files, held in memory until the language is finished.
+     *
+     * Every object used to read its chapter's contents.json back off disk, add itself to it, and
+     * write the whole file out again. With ~2400 objects per language and an index that grows to
+     * hundreds of KB that is quadratic, and it was most of what writing the json cost.
+     *
+     * An index left over from an earlier run is still merged rather than replaced, which is what
+     * the per-object version did — every caller clears json/ first, so it normally starts empty.
+     */
+    private static final java.util.Map<String, JSONObject> CONTENTS = new java.util.LinkedHashMap<>();
+
+    private static JSONObject contents (String language, String chapter) throws Exception {
+        String path = "json/" + language + "/" + chapter + "/contents.json";
+        JSONObject cached = CONTENTS.get(path);
+        if (cached != null) {
+            return cached;
+        }
+        File file = new File(path);
+        JSONObject contents;
+        if (file.exists()) {
+            contents = Tools.readJSON(file);
+        } else {
+            contents = new JSONObject();
+            contents.put("path", language + "/" + chapter);
+            contents.put("name", Tools.getControlText(chapter, language));
+            contents.put("folders", new JSONArray());
+        }
+        CONTENTS.put(path, contents);
+        return contents;
+    }
+
+    /** Writes every chapter index touched since the last flush. Called once per language. */
+    public static void flushContents () {
+        for (java.util.Map.Entry<String, JSONObject> entry : CONTENTS.entrySet()) {
+            try {
+                Tools.writeJson(entry.getValue(), new File(entry.getKey()));
+            } catch (Exception e) {
+                System.err.println("Error writing " + entry.getKey() + ": " + e.getMessage());
+            }
+        }
+        CONTENTS.clear();
     }
 
 }

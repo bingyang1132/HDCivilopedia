@@ -98,7 +98,7 @@ public class Audit {
         // 1. texture folders are discovered by walking the configured roots, so they can no
         //    longer go stale individually -- but a wrong root in config.properties takes the
         //    whole tree with it, silently. Checked here rather than by touching
-        //    Constants.ddsFolders(), which would trigger the ~17s walk.
+        //    Constants.ddsFile(), which would trigger the texture walk.
         int missing = 0;
         for (String root : new String[] { Constants.STEAM_FOLDER, Constants.MODS_FOLDER,
                 Constants.HD_MOD, Constants.DATABASES_SOURCE }) {

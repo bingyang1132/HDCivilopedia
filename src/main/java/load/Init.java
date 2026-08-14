@@ -899,6 +899,8 @@ public class Init {
             path = (icon.toUpperCase().startsWith("ICON_") ? "" : "ICON_") + icon.toUpperCase() + ".png";
             ImageEditor.saveImage(image, path);
         }
+        // saveImage only queues; the encoding happens here, in parallel
+        ImageEditor.flushImages();
     }
 
     public static void logError(String message) {

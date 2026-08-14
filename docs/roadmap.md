@@ -3,7 +3,7 @@
 已发现但未修的缺陷记在 [known-issues.md](known-issues.md)，那里同时记了**怎么检测**每一类静默失败
 ——这个生成器不会因为出错而构建失败，只会少东西。改动前后跑 `Main audit` 对比基线。
 
-一轮耗时参考：`page` ~130s，`after_init` ~190s（其中 `load()` 74s）。
+一轮耗时参考：`page` ~56s，`after_init` ~90s（其中 `load()` 11.6s、渲染 28.6s、归档 15s）。
 
 ---
 
@@ -178,18 +178,25 @@ CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wi
 
 ### 性能
 
-**当前不是瓶颈，建议排在功能之后**：日常迭代只需要 `page`（130s），整轮 190s 也不算难受。
-而且这些改动动的正是 `Model.load()`，和功能开发撞车；`Main audit` 现在能自动验收「产物不变」，
-真要做的时候有工具了。
+**2026-08-14 做了一轮，整轮 190s → 90s，详见 [performance.md](performance.md)「优化三」。**
+那一轮最大的教训是：**这里原来列的优先级是错的**。加了阶段计时之后发现，
+排第一的「批量查询消除 N+1」根本不是瓶颈——`Model.load()` 里最慢的 `Civilization`
+有 8.6s 是第一次图标查找触发的目录遍历，和 SQL 毫无关系；而没人怀疑的
+「64 字节缓冲区的文件拷贝」一个人占了 35.7s。**先量再改。**
 
-- **批量查询消除 N+1**（中风险、收益大）：`Building.load()` 对每个建筑发 14 条子查询，
-  Unit/Technology/Civilization 同类。改为每张子表一次性 `select *`，内存里按外键分组装配。
-  以 Building 为样板验证产物一致后再推广。
-- **多线程**：`linkData` 之前的各 `Model.load()` 相互独立，`write()`、`initIcons()` 同理。
-  注意 SQLite `Connection` 非线程安全 → 每线程独立连接，`Db` 改 ThreadLocal。
-- **`PreparedStatement`** 替换字符串拼接（性能 + 防注入）。
-- **写 JSON 聚合**：`Writable.writeJSON()` 每个对象都重读+重写 `contents.json`，可改内存聚合最后落盘。
-- **HTML 渲染**：`Page` 用 DOM+Transformer 序列化上千文件，可评估改 `StringBuilder` 或模板。
+已做：文件拷贝缓冲区、atlas 解码缓存、切图批量拷贝、PNG 编码延后并行、`.dds` 文件名索引、
+遍历改 `walkFileTree`、章节索引内存聚合、`TransformerFactory` 复用。
+
+剩下的：
+
+- **多线程渲染 + 多线程写 json**（剩下的大头，28.6s + 16.3s）。页面之间互相独立，
+  但 `Tools` 里的 `HashMap` 缓存、`Trait.sort` 这类共享可变状态得先审一遍——
+  并发下它们的错法是**产物随机少东西**，正好是本项目最怕的失效方式。
+- **批量查询消除 N+1**：`Building.load()` 对每个建筑发 14 条子查询，Unit/Technology 同类。
+  实测下来这些现在都在 0.5~4s 量级，收益比原先估计的小得多，优先级应下调。
+- **`PreparedStatement`** 替换字符串拼接（现在主要是防注入的理由，不是性能）。
+- 验收工具已经有了：18132 个产物文件的 sha1 清单，改前改后各算一次比对，
+  加上 `Main audit` 的十一项指标。上面那一轮全程 0 差异。
 
 ### 其它工程化
 

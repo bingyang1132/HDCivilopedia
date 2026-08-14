@@ -67,6 +67,7 @@ public class Main {
         timed("Trait.linkData", Trait::linkData);
         timed("District.linkData", District::linkData);
         timed("Unit.linkData", Unit::linkData);
+        tools.ImageEditor.flushImages();
         System.out.printf("[TIME] %-22s %8.2fs%n", "== load() total", (System.nanoTime() - start) / 1e9);
     }
 
@@ -74,11 +75,13 @@ public class Main {
         for (Writable writable : WRITABLES) {
             writable.writeJSON(language);
         }
+        // the chapter indexes are accumulated in memory while the objects are written
+        Writable.flushContents();
     }
 
     public static void writeAll () {
         for (String language : Page.LANGUAGES) {
-            write(language);
+            timed("write " + language, () -> write(language));
         }
     }
 

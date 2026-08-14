@@ -1035,16 +1035,27 @@ public class Page {
         return document;
     }
 
+    /**
+     * Reused across the ~9750 pages of a run: building the factory is the expensive part, and it
+     * was being rebuilt for every single page. The Transformer itself is still per call, since one
+     * is not safe to reuse.
+     */
+    private static final TransformerFactory TRANSFORMERS = TransformerFactory.newInstance();
+
     public static void writeDocumentToFile (Document document, File target) throws Exception {
-        Transformer transformer = TransformerFactory.newInstance().newTransformer();
+        Transformer transformer = TRANSFORMERS.newTransformer();
         StringWriter writer = new StringWriter();
         transformer.transform(new DOMSource(document), new StreamResult(writer));
         String xml = writer.toString();
         String html = "<!DOCTYPE html>\n" + xml;
-        html = html.replaceAll("&lt;", "<");
-        html = html.replaceAll("&gt;", ">");
+        // literal replace, not replaceAll: neither of these is a pattern, and this ran twice per
+        // page over the whole document
+        html = html.replace("&lt;", "<");
+        html = html.replace("&gt;", ">");
 
-        target.mkdirs();
+        // the parent, not the file itself -- this used to mkdirs() the html path, creating a
+        // directory where the page goes and then deleting it again
+        target.getParentFile().mkdirs();
         if (target.exists()) {
             target.delete();
         }
@@ -1413,14 +1424,31 @@ public class Page {
         out.close();
     }
 
+    /** Runs a step and prints how long it took, matching Main's [TIME] lines. */
+    interface Step {
+        void run () throws Exception;
+    }
+
+    static void timed (String name, Step step) throws Exception {
+        long start = System.nanoTime();
+        step.run();
+        System.out.printf("[TIME] %-22s %8.2fs%n", name, (System.nanoTime() - start) / 1e9);
+    }
+
     public static void convertAll() throws Exception {
-        copyFiles(new File("json"), new File("temp"));
-        copyFiles(new File("manual/json"), new File("temp"));
-        deleteFilesExcept(new File("output"), "icons");
-        // output_android was never cleared, so pages for content the mod has since renamed or
-        // removed stayed behind for good; this first sweep dropped 1570 of them
-        deleteFilesExcept(new File("output_android"), "icons");
-        copyFiles(new File("output"), new File("output_android"));
+        timed("stage temp", () -> {
+            copyFiles(new File("json"), new File("temp"));
+            copyFiles(new File("manual/json"), new File("temp"));
+        });
+        timed("clear output", () -> {
+            deleteFilesExcept(new File("output"), "icons");
+            // output_android was never cleared, so pages for content the mod has since renamed or
+            // removed stayed behind for good; this first sweep dropped 1570 of them
+            deleteFilesExcept(new File("output_android"), "icons");
+        });
+        timed("seed android", () -> copyFiles(new File("output"), new File("output_android")));
+        long pages = System.nanoTime();
+        long desktop = 0, android = 0;
         for (String language : LANGUAGES) {
 
             JSONObject tocPage = new JSONObject();
@@ -1432,8 +1460,12 @@ public class Page {
             rightColumnItems.add(Tools.getStatbox("", contents));
 
             for (String chapter : HEADERS) {
+                long start = System.nanoTime();
                 convertChapter(new File("temp/" + language + "/" + chapter), new File("output/" + language + "/" + chapter));
+                long middle = System.nanoTime();
                 convertAndroidChapter(new File("temp/" + language + "/" + chapter), new File("output_android/" + language + "/" + chapter));
+                desktop += middle - start;
+                android += System.nanoTime() - middle;
 
                 contents.add(Tools.getIconlabel(Tools.LINK_URL + "/" + language + "/" + chapter + "/index/toc.html", Tools.IMAGE_URL + "/ICON_CIVILOPEDIA_" + chapter.toUpperCase() + ".png", "", Tools.getControlText(chapter, language)));
             }
@@ -1445,9 +1477,13 @@ public class Page {
             buildSearchIndex(language);
             buildSidebarScript(language);
         }
-        deleteFiles(new File("temp"));
-        copyFiles(new File("manual/output"), new File("output"));
-        copyFiles(new File("manual/output_android"), new File("output_android"));
+        System.out.printf("[TIME] %-22s %8.2fs  (desktop %.2fs, android %.2fs)%n", "render pages",
+                (System.nanoTime() - pages) / 1e9, desktop / 1e9, android / 1e9);
+        timed("copy manual", () -> {
+            deleteFiles(new File("temp"));
+            copyFiles(new File("manual/output"), new File("output"));
+            copyFiles(new File("manual/output_android"), new File("output_android"));
+        });
     }
 
     public static void addJson(JSONObject original, JSONObject extra, boolean overwrite) {
@@ -1489,16 +1525,19 @@ public class Page {
             return;
         }
         if (source.isFile()) {
-            target.mkdirs();
+            target.getParentFile().mkdirs();   // was mkdirs() on the file path, then deleted again
             if (target.exists()) {
                 target.delete();
             }
             target.createNewFile();
             InputStream in = new FileInputStream(source);
             OutputStream out = new FileOutputStream(target);
-            byte[] buf = new byte[64];
+            // 64 KB, not the 64 bytes this used to use. A run copies ~190 MB through here -- json
+            // into temp, the icons into output_android, the manual images into both -- which cost
+            // as long as rendering every page did, almost all of it syscall overhead.
+            byte[] buf = new byte[1 << 16];
             int len;
-            while ((len = in.read(buf, 0, 64)) >= 0) {
+            while ((len = in.read(buf)) >= 0) {
                 out.write(buf, 0, len);
             }
             in.close();

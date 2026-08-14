@@ -3430,12 +3430,9 @@ public class Tools implements Constants {
             if (!fileName.endsWith(".dds")) {
                 fileName += ".dds";
             }
-            File file = null;
-            for (String folder : Constants.ddsFolders()) {
-                File f = new File(folder + "/" + fileName);
-                if (f.exists()) {
-                    file = f;
-                }
+            File file = Constants.ddsFile(fileName);
+            if (file == null) {
+                return null;
             }
             BufferedImage image = ImageEditor.cutImage(file, perRow, perColumn, index);
             return image;

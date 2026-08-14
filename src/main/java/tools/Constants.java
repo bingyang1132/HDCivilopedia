@@ -1,9 +1,6 @@
 package tools;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 public interface Constants {
 
@@ -42,17 +39,18 @@ public interface Constants {
     public static final String XLS = "Texts.xlsx";
 
     /**
-     * Every directory under the game and mod roots that directly holds a .dds.
+     * The .dds behind an atlas file name, or null if it is not on disk anywhere under the roots.
      *
      * This replaced a hand-written list of 83 absolute paths. That list rotted: 31 entries were
      * dead when checked, mostly because mod folders had been renamed, and each dead entry lost a
      * whole atlas worth of icons with no error anywhere. Discovery cannot go stale.
      *
-     * A method rather than a constant so the ~17s walk happens on the first icon lookup instead
-     * of the first touch of this interface -- `page` and `audit` never need it.
+     * A method rather than a constant so the walk happens on the first icon lookup instead of the
+     * first touch of this interface -- `page` and `audit` never need it.
      */
-    public static List<String> ddsFolders () {
-        return DdsFolders.LIST;
+    public static File ddsFile (String fileName) {
+        String path = DdsFolders.FILES.get(fileName.toLowerCase());
+        return path == null ? null : new File(path);
     }
 
     public static final String IMAGE_URL = "../../../icons";
