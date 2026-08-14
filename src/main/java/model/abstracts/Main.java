@@ -120,9 +120,13 @@ public class Main {
                 System.out.println("converting json into html...");
                 Page.convertAll();
                 Audit.run(false);
+                tools.Archive.run();
             } else if (cmd.equals("audit")) {
                 // `audit save` records the current numbers as the new baseline
                 Audit.run(args.length >= 2 && args[1].equals("save"));
+            } else if (cmd.equals("archive")) {
+                // normally runs itself at the end of `page` / `after_init`
+                tools.Archive.run();
             } else if (cmd.equals("init")) {
                 Init.main(null);
             } else if (cmd.equals("icons")) {
@@ -166,6 +170,7 @@ public class Main {
                 Page.convertAll();
 
                 Audit.run(false);
+                tools.Archive.run();
             } else {
                 System.out.println("unknown command");
                 
@@ -197,6 +202,7 @@ public class Main {
             Page.convertAll();
 
             Audit.run(false);
+            tools.Archive.run();
 
             // ---------------------------------------------------------------------------
             // System.out.println("loading...");

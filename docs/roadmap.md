@@ -76,13 +76,18 @@ xhh.txt        171 行   6 个 version
 4. **在他们已有的渠道问**（QQ/微信），不是 GitHub、不是文件、不是任何要符合语法的东西。
    一旦要求他们产出格式，就退回旧系统了。
 
-#### 前置：归档自动化
+#### 前置：归档自动化 —— **已完成**
 
-现在归档是手工的，且**只存了 `output/`（HTML），没有 `json/`**。要做的：
+`tools/Archive.java`，`page` / `after_init` 跑完自动执行，也可以 `Main archive` 单独跑。
+写到 `archive.folder`（config.properties，不配就跳过）下的 `snapshots/<yyyyMMdd>/`，
+**同一天只保留当天最后一次**，和顶层那 20 个手工发布归档分开放。一次 15~17s、65 MB：
 
-- 每次跑百科自动往 history 下归档一份，按日期命名，**同一天只保留当天最新**
-- **归档时把 `json/` 一并打包**——JSON 比 HTML 好 diff 得多（HTML 带 `<span>`/`<a>`/表格结构，
-  一个数值变化牵动一堆标记）。历史那 20 个只有 HTML，只能走「剥标签取正文再比」的路径
+- `json/` 原样复制（21 MB）——**diff 的正源**。HTML 不好 diff（一个数值变化牵动一堆
+  `<span>`/`<a>`/表格标记），历史那 20 个只有 HTML，只能走「剥标签取正文再比」的路径
+- `output/` 和 `output_android/` 各压一个 zip，**排除 `icons/` 和 `images/`**
+  （122 MB 逐字节不变的二进制，纯噪音）。HTML 压缩比约 15:1，两个 zip 共 56 MB 而不是 690 MB
+- `manifest.json` 记 `pediaCommit`——两个快照的差异可能来自 mod 变了，也可能来自**生成器变了**，
+  diff 自己分不出来，得靠这个字段
 
 #### 脚本与 skill 的边界
 
@@ -113,7 +118,8 @@ skill/    读摘要 + 公告 → 起草条目 → 校验 [] 实体链接能否�
 
 #### 落地顺序
 
-1. 先做归档自动化（含 `json/`）——后面都依赖它。
+1. ~~先做归档自动化（含 `json/`）~~ **已完成，见上。** 注意新旧快照形状不同：
+   `snapshots/<日期>/` 有 `json/`，顶层那 20 个只有 HTML。
 2. 写脚本，拿 `HDCivilopedia_20260702` 和 `HDCivilopedia_20260807` 试
    （间隔一个多月，页数 10412 → 9606，其中约 800 页是我们清掉的孤儿页）。
    **看到真实变更集之后再定 schema**，比现在凭空设计准得多。
@@ -219,7 +225,9 @@ skill/    读摘要 + 公告 → 起草条目 → 校验 [] 实体链接能否�
   详见 [performance.md](performance.md)。
 - **历史背景**：走 Wikipedia 缓存（`Main wiki` → `manual/wiki/`），详见 memory 里的说明。
 - **搜索（基础版）**：构建期产 `output/{lang}/search-data.js`，前端 `search.js` 做标题子串匹配。
-  ——见上面「建议优先做」第 1 条，还有较大改进空间。
+  ——见上面「建议优先做」第 2 条，还有较大改进空间。
+- **产物归档自动化**：`tools/Archive.java`，每轮 `page` / `after_init` 后按日归档
+  `json/` + 压缩的 HTML + `manifest.json`，详见上面 changelog 一节的「前置」。
 - **配置外部化**：四个机器相关路径进 `config.properties`（模板 `config.example.properties`），
   83 条硬编码贴图目录换成扫描根目录自动发现——不会再因 mod 改名而失效。产物逐项不变，
   且 `load()` 从 122s 降到 74s（每次图标查找少 stat 几十个目录）。
