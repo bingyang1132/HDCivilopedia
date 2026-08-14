@@ -1,0 +1,41 @@
+# What CI can and cannot check here.
+#
+# It cannot build the pedia: that needs the game's SQLite databases (304 MB, git-ignored), the
+# Steam library and the mod folders. So the artifact-level checks stay local -- `Main audit` runs
+# itself at the end of every `page` / `after_init` and compares against manual/audit-baseline.json.
+#
+# What is left is still worth automating, because this project's defects are silent by nature
+# (docs/known-issues.md): compile both source sets and run the tests that cover the pure logic --
+# pinyin tables, search ranking, the archiver, the wiki name handling, the audit's own counting.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  java:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 8 because that is what the pom targets, 17 because that is what a current checkout runs
+        java: ['8', '17']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java }}
+          cache: maven
+      - run: mvn -B test
+
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      # drives the shipped manual/output/search.js against a fixture index
+      - run: node scripts/test_search.js

@@ -94,7 +94,7 @@ public class Archive {
     }
 
     /** Copies a tree, returning the number of files written. */
-    private static int copy (File from, File to) throws IOException {
+    static int copy (File from, File to) throws IOException {
         if (!from.exists()) {
             return 0;
         }
@@ -115,7 +115,7 @@ public class Archive {
     }
 
     /** Zips a tree minus {@link #SKIP}, returning the number of entries written. */
-    private static int zip (File from, File target) throws IOException {
+    static int zip (File from, File target) throws IOException {
         if (!from.isDirectory()) {
             return 0;
         }
@@ -166,7 +166,7 @@ public class Archive {
         }
     }
 
-    private static void delete (File file) throws IOException {
+    static void delete (File file) throws IOException {
         if (!file.exists()) {
             return;
         }

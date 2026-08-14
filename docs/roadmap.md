@@ -146,9 +146,17 @@ skill/    读摘要 + 公告 → 起草条目 → 校验 [] 实体链接能否�
 - **每页都加载 524 KB 索引**（zh，加拼音前是 462 KB；en 是 412 KB）。近万个页面各拉一次，
   手机端尤其值得算笔账。扩到标签/描述会让这个数字继续涨，**两件事得一起权衡**。
 
-### 3. 基础单元测试 + CI
+### 3. 单元测试 + CI —— **已完成，但覆盖面有天花板**
 
-编译 + 冒烟（`-Dhd.limit`）+ `Main audit`。audit 已经能给出「产物没变」的判据，接上 CI 就是回归保护。
+`mvn test`（20 条）+ `node scripts/test_search.js`（12 条），CI 见 `.github/workflows/ci.yml`。
+
+**CI 跑不了百科本身**：需要游戏的 SQLite 数据库（304 MB，不入库）、Steam 库、mod 目录。
+所以产物层面的验收仍然只能在本地，靠 `page` / `after_init` 结束时自动跑的 `Main audit`。
+CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wiki 名称处理、audit 自己的计数。
+
+想把 CI 提到「能跑一次真构建」，唯一的路是造一份**最小的假数据库**（几张表、几条数据），
+让 `load()` → `page` 跑通并断言产物结构。工作量不小，但那才是真正的回归保护，
+`-Dhd.limit` 的冒烟也只有到那时候才有地方跑。
 
 ---
 
@@ -241,6 +249,12 @@ skill/    读摘要 + 公告 → 起草条目 → 校验 [] 实体链接能否�
     没有读音的字会原样留在 `p` 里，于是「表该重新生成了」是个看得见的数字。
 - **产物归档自动化**：`tools/Archive.java`，每轮 `page` / `after_init` 后按日归档
   `json/` + 压缩的 HTML + `manifest.json`，详见上面 changelog 一节的「前置」。
+- **单元测试 + CI**：`src/test/java`（junit4，20 条）+ `scripts/test_search.js`（node，12 条），
+  GitHub Actions 跑 JDK 8/17 两条腿。选测点是「出过错、且不需要游戏数据」的纯逻辑：
+  多音字词表压过逐字读音、`[ICON_*]` 标记从标题里剥掉、搜索分档排序（含「不命中音节中段」）、
+  归档 zip 排除 icons/images 且 `delete` 只删指定目标、领袖名去 persona 后缀、
+  以及 audit 会跟随 fastjson 的 `$ref`（当年手写脚本漏了它，1092 报成 1014）。
+  本地用 `-Dmaven.compiler.release=8` 验过 Java 8 API 面，不只是 source/target。
 - **配置外部化**：四个机器相关路径进 `config.properties`（模板 `config.example.properties`），
   83 条硬编码贴图目录换成扫描根目录自动发现——不会再因 mod 改名而失效。产物逐项不变，
   且 `load()` 从 122s 降到 74s（每次图标查找少 stat 几十个目录）。

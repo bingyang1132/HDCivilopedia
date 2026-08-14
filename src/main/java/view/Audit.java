@@ -198,7 +198,7 @@ public class Audit {
     }
 
     /** Ideographs plus extension A, matching tools/Pinyin.java. */
-    private static boolean hasHan (String text) {
+    static boolean hasHan (String text) {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
             if (c >= 0x3400 && c <= 0x9fff) {
@@ -208,7 +208,7 @@ public class Audit {
         return false;
     }
 
-    private static void collectIconlabelsWithoutSrc (Object node, List<String> alts) {
+    static void collectIconlabelsWithoutSrc (Object node, List<String> alts) {
         if (node instanceof JSONObject) {
             JSONObject object = (JSONObject) node;
             JSONObject iconlabel = object.getJSONObject("iconlabel");

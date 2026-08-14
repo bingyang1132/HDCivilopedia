@@ -39,6 +39,19 @@ changelog   # 加载内容并写出 JSON
 page        # 将 JSON 渲染为 HTML
 ```
 
-其它命令：`build <version> [output]` 生成更新日志、`after_init` 串联完整流程。无参数运行则一次性跑完全流程。
+其它命令：`build <version> [output]` 生成更新日志、`wiki [refresh|N]` 抓取历史背景、
+`archive` 归档当次产物（`page` / `after_init` 结束时会自动跑）、`audit [save]` 产物体检、
+`after_init` 串联完整流程。无参数运行则一次性跑完全流程。
 
 更多运行细节见 [docs/run.md](docs/run.md)。
+
+## 测试
+
+```
+mvn test                    # 纯逻辑单元测试（拼音表、归档、wiki 名称处理、audit 计数）
+node scripts/test_search.js # 前端搜索排序与拼音匹配
+```
+
+CI（`.github/workflows/ci.yml`）跑的就是这两条。**CI 跑不了百科本身**——那需要游戏的 SQLite
+数据库（304 MB，不入库）、Steam 库和 mod 目录。产物层面的验收留在本地：`Main audit`
+在每轮 `page` / `after_init` 结束时自动对比 `manual/audit-baseline.json`。

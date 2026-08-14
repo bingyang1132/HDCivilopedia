@@ -1364,12 +1364,7 @@ public class Page {
                     if (name == null || name.isEmpty()) {
                         continue;
                     }
-                    // strip [ICON_*]/[COLOR]/... markup tokens so titles read cleanly and
-                    // matching runs against visible text only; keep raw name if nothing remains
-                    String title = name.replaceAll("\\[[^\\]]*\\]", "").replaceAll("\\s+", " ").trim();
-                    if (title.isEmpty()) {
-                        title = name;
-                    }
+                    String title = searchTitle(name);
                     JSONObject entry = new JSONObject(true);
                     entry.put("t", title);
                     entry.put("c", category);
@@ -1395,6 +1390,16 @@ public class Page {
         String js = "window.SEARCH_INDEX=" + JSON.toJSONString(searchIndex, SerializerFeature.BrowserCompatible) + ";";
         writeTextToFile(js, new File("output/" + language + "/search-data.js"));
         writeTextToFile(js, new File("output_android/" + language + "/search-data.js"));
+    }
+
+    /**
+     * Strips [ICON_*]/[COLOR]/... markup tokens so a title reads cleanly and matching runs
+     * against visible text only. Falls back to the raw name when nothing is left, which happens
+     * for entries whose whole name is an icon token.
+     */
+    static String searchTitle (String name) {
+        String title = name.replaceAll("\\[[^\\]]*\\]", "").replaceAll("\\s+", " ").trim();
+        return title.isEmpty() ? name : title;
     }
 
     public static void writeTextToFile (String text, File target) throws Exception {

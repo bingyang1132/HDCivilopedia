@@ -52,6 +52,13 @@
 
   <build>
     <plugins>
+      <!-- pinned: the version maven would pick by default is not necessarily in the local
+           repository, and `mvn -o test` has to work offline -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
