@@ -42,7 +42,8 @@ public class Audit {
      */
     private static final List<String> LOWER_IS_BETTER = java.util.Arrays.asList(
             "configRootsMissing", "iconlabelsNoSrc", "iconlabelTagsNoSrc",
-            "iconlabelsNoSrcButPngExists", "androidPagesUnexpected", "searchEntriesNoIcon");
+            "iconlabelsNoSrcButPngExists", "androidPagesUnexpected", "searchEntriesNoIcon",
+            "searchEntriesNoPinyin", "searchPinyinUnmapped");
 
     public static void run (boolean save) throws Exception {
         Map<String, Integer> now = collect();
@@ -151,6 +152,8 @@ public class Audit {
         // 4. the user-visible version of metric 2: how many search hits come up with no icon
         int noIcon = 0;
         int total = 0;
+        int noPinyin = 0;
+        int unmappedPinyin = 0;
         for (String language : Page.LANGUAGES) {
             File data = new File("output/" + language + "/search-data.js");
             if (!data.exists()) {
@@ -165,16 +168,44 @@ public class Audit {
             JSONArray entries = JSON.parseArray(js.substring(eq + 1, end));
             for (Object o : entries) {
                 total++;
-                String icon = ((JSONObject) o).getString("i");
+                JSONObject entry = (JSONObject) o;
+                String icon = entry.getString("i");
                 if (icon == null || icon.isEmpty()) {
                     noIcon++;
+                }
+                // 5. pinyin is what makes a Chinese title reachable from a latin keyboard, so a
+                //    title that should have it and does not is unsearchable for most users. A
+                //    character with no reading is passed through as itself, which is why a
+                //    non-ASCII character inside `p` means the table needs regenerating
+                //    (scripts/gen_pinyin_tables.py) -- otherwise that gap would be invisible.
+                String title = entry.getString("t");
+                String pinyin = entry.getString("p");
+                if (title != null && hasHan(title)) {
+                    if (pinyin == null) {
+                        noPinyin++;
+                    } else if (hasHan(pinyin)) {
+                        unmappedPinyin++;
+                    }
                 }
             }
         }
         m.put("searchEntriesNoIcon", noIcon);
         m.put("searchEntriesTotal", total);
+        m.put("searchEntriesNoPinyin", noPinyin);
+        m.put("searchPinyinUnmapped", unmappedPinyin);
 
         return m;
+    }
+
+    /** Ideographs plus extension A, matching tools/Pinyin.java. */
+    private static boolean hasHan (String text) {
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            if (c >= 0x3400 && c <= 0x9fff) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static void collectIconlabelsWithoutSrc (Object node, List<String> alts) {

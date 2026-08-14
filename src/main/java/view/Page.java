@@ -1313,7 +1313,7 @@ public class Page {
      * Builds output/{language}/search-data.js (and the android copy) from the staged
      * temp/{language}/{chapter} index files. Mirrors convertChapter's index merge so the
      * index lists exactly the pages that get generated. Each entry: t=title, u=link,
-     * i=icon (optional), c=localized chapter name.
+     * i=icon (optional), c=localized chapter name, p=pinyin (optional).
      */
     public static void buildSearchIndex (String language) throws Exception {
         JSONArray searchIndex = new JSONArray();
@@ -1380,6 +1380,12 @@ public class Page {
                     } else {
                         String subPath = file.getString("path");
                         entry.put("u", Tools.LINK_URL + "/" + indexPath + "/" + folderPath + "/" + subPath.replace(".json", ".html"));
+                    }
+                    // p=pinyin, syllables space separated; absent for titles with nothing Chinese
+                    // in them, so the en index is unaffected. See tools/Pinyin.java.
+                    String pinyin = tools.Pinyin.of(title);
+                    if (pinyin != null) {
+                        entry.put("p", pinyin);
                     }
                     searchIndex.add(entry);
                 }

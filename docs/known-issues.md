@@ -111,6 +111,8 @@
 | `iconlabelsNoSrcButPngExists` | **PNG 已在磁盘却没接上——这个永远是 bug** | 4 |
 | `androidPagesUnexpected` | 两棵输出树页面数差与预期值的偏离 | 0 |
 | `searchEntriesNoIcon` | 搜索结果里没有图标的条目数 | 1261 / 4855 |
+| `searchEntriesNoPinyin` | 有汉字却没有 `p` 字段的条目——拉丁键盘搜不到 | 0 |
+| `searchPinyinUnmapped` | `p` 里残留汉字，即该字没有读音，**该重跑 `scripts/gen_pinyin_tables.py`** | 0 |
 
 只报绝对值会变成噪音——上面好几个指标非零是我们理解并接受的原因（见本文各节）。
 所以它对比基线，只在**往坏的方向动**时标 `<== WORSE`。基线文件
