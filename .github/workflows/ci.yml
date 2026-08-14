@@ -22,8 +22,8 @@ jobs:
         # 8 because that is what the pom targets, 17 because that is what a current checkout runs
         java: ['8', '17']
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: ${{ matrix.java }}
@@ -33,9 +33,9 @@ jobs:
   search:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: '20'
+          node-version: '22'
       # drives the shipped manual/output/search.js against a fixture index
       - run: node scripts/test_search.js
