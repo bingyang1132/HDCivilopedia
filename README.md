@@ -122,4 +122,7 @@ sourced from Baidu Baike is excluded from the repository, since there is no lice
 redistribute it under; see [manual/wiki/README.md](manual/wiki/README.md).
 
 Game data and art assets belong to Firaxis Games / 2K Games and the individual mod authors.
-They have never been in this repository and are not distributed with it.
+They have never been in this repository. The Android APK on the Releases page does bundle the
+encyclopedia rendered from them — text from the game's and the mods' localization tables, icons
+cut from each mod's DDS atlases. That content remains its authors'; this repository claims no
+rights over it and grants no third party the right to redistribute it.

@@ -37,5 +37,10 @@ fork 之后的改动、以及哪些属于哪一方，逐项记录在 docs/upstre
     唯一一条来自百度百科的缓存（zh_Hans_CN/CIVILIZATION_CHINA.json）没有可再分发的
     许可，因此不纳入版本管理，由使用者自行抓取；详见 manual/wiki/README.md。
   * 游戏数据（*.sqlite、本地化文本）与美术资源（.dds/.blp）属于 Firaxis Games /
-    2K Games 及各 mod 作者，从未纳入本仓库的版本管理，也不随本仓库分发。
+    2K Games 及各 mod 作者，从未纳入本仓库的版本管理。
+  * 但本仓库的 Releases 页面分发安卓版 APK，其中打包了由上述数据与资源渲染出的
+    百科内容：文本取自游戏与 mod 的本地化表，图标由各 mod 的 DDS 图集切出。
+    这部分内容的著作权属于 Firaxis Games / 2K Games 及各 mod 作者，本仓库不对其
+    主张任何权利，也不授予第三方再分发的许可。APK 内同样包含 manual/wiki/ 的维基
+    百科段落，按 CC BY-SA 3.0 使用，页面逐条标注来源并链接回原文。
   * docs/missing-atlas-art.md 中列出的图集与标签名，属于各自 mod 的作者。

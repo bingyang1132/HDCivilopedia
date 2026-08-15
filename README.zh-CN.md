@@ -108,4 +108,7 @@ CI（`.github/workflows/ci.yml`）跑的就是这两条，JDK 8 / 17 两条腿�
 原文 URL，产物页面逐条标注来源并链接回原文。唯一一条来自百度百科的缓存没有可再分发的许可，
 **不入版本管理**，由使用者自行抓取——见 [manual/wiki/README.md](manual/wiki/README.md)。
 
-游戏数据与美术资源属于 Firaxis Games / 2K Games 及各 mod 作者，从未进入本仓库，也不随之分发。
+游戏数据与美术资源属于 Firaxis Games / 2K Games 及各 mod 作者，从未进入本仓库。但 Releases
+页面分发的安卓 APK 打包了由它们渲染出的百科内容——文本取自游戏与 mod 的本地化表，图标由各
+mod 的 DDS 图集切出。该部分内容的著作权仍属原作者，本仓库不主张任何权利，也不授予第三方
+再分发的许可。
