@@ -35,3 +35,9 @@ ChangelogResouce.json
 
 # Local machine paths (config.example.properties is the tracked template)
 /config.properties
+
+# Baidu Baike has no license we can redistribute under, so this one cached entry stays out
+# of the repo. Everything else in manual/wiki/ comes from Wikipedia (CC BY-SA). To recreate
+# it, follow the curl recipe in the comment above the CIVILIZATION_CHINA row of
+# manual/wiki/_overrides.tsv; without it that page falls back to the game's own text.
+/manual/wiki/zh_Hans_CN/CIVILIZATION_CHINA.json

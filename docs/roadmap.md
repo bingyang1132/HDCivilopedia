@@ -233,11 +233,14 @@ CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wi
 
 1. **授权**——上游仓库没有 LICENSE，公开衍生作品需要先取得授权。**这条是硬前置**，
    详见 [upstream-differences.md](upstream-differences.md) 的授权状态一节。
-2. `manual/wiki/` 是维基百科（CC BY-SA）与百度百科正文首段的缓存，公开前要决定怎么处理。
+2. ~~`manual/wiki/` 抓取缓存~~ 已处理：维基部分按 CC BY-SA 保留（每条记录原文 URL、
+   页面逐条标注来源），唯一一条百度百科来源的移出版本管理，由使用者自行抓取。
+   见 [manual/wiki/README.md](../manual/wiki/README.md)。
 3. ~~机器路径与编辑器配置~~ 已处理：`config.properties` 隔离机器路径，
    内置默认值改成从环境推导（`%USERPROFILE%` / `%LOCALAPPDATA%`）而不是硬编码某人的目录；
    `.vscode/`、`.cursorignore` 已移出版本管理。
-4. `docs/` 目前全中文，面向外部读者可能需要一份英文说明。
+4. ~~英文说明~~ 已处理：`README.md` 为英文、`README.zh-CN.md` 为中文。
+   `docs/` 仍是全中文，英文 README 里逐篇给了一句话说明各写了什么。
 
 贡献边界已经写清楚了：[upstream-differences.md](upstream-differences.md) 记录了分叉点、
 逐项改动、以及自行复核 diff 的命令——**本仓库的 git 历史不含上游提交**（clean import 时丢了），

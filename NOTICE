@@ -28,8 +28,10 @@ fork 之后的改动、以及哪些属于哪一方，逐项记录在 docs/upstre
 第三方内容
 ----------
 
-  * manual/wiki/ 是维基百科（CC BY-SA 3.0）与百度百科正文首段的抓取缓存。
-    生成的页面对每一条都标注了来源并链接回原文。
+  * manual/wiki/ 是条目首段的抓取缓存，内容来自维基百科，按 CC BY-SA 3.0 使用：
+    每个 json 记录原文 URL，生成的页面逐条标注来源并链接回原文。
+    唯一一条来自百度百科的缓存（zh_Hans_CN/CIVILIZATION_CHINA.json）没有可再分发的
+    许可，因此不纳入版本管理，由使用者自行抓取；详见 manual/wiki/README.md。
   * 游戏数据（*.sqlite、本地化文本）与美术资源（.dds/.blp）属于 Firaxis Games /
     2K Games 及各 mod 作者，从未纳入本仓库的版本管理，也不随本仓库分发。
   * docs/missing-atlas-art.md 中列出的图集与标签名，属于各自 mod 的作者。

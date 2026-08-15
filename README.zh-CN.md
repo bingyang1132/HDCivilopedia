@@ -1,5 +1,7 @@
 # HD Civilopedia
 
+*[English](README.md)*
+
 文明 VI 模组「和而不同 / Harmony in Diversity」的百科（Civilopedia）生成工具。
 
 读取游戏的 SQLite 数据库与本地化文本，加载全部 DLC 与 mod 的改动，把每个实体渲染成
@@ -101,5 +103,8 @@ CI（`.github/workflows/ci.yml`）跑的就是这两条，JDK 8 / 17 两条腿�
 详见 [upstream-differences.md 的授权状态一节](docs/upstream-differences.md#授权状态开源前必须先解决)
 与 [NOTICE](NOTICE)。
 
-另外 `manual/wiki/` 是维基百科（CC BY-SA）与百度百科正文首段的抓取缓存，产物页面里逐条标注了
-来源并给出链接；公开发布前需要单独决定这份缓存本身怎么处理。
+`manual/wiki/` 是条目首段的抓取缓存，内容来自维基百科，按 CC BY-SA 3.0 使用：每个 json 记录
+原文 URL，产物页面逐条标注来源并链接回原文。唯一一条来自百度百科的缓存没有可再分发的许可，
+**不入版本管理**，由使用者自行抓取——见 [manual/wiki/README.md](manual/wiki/README.md)。
+
+游戏数据与美术资源属于 Firaxis Games / 2K Games 及各 mod 作者，从未进入本仓库，也不随之分发。
