@@ -49,6 +49,20 @@ public class Config {
         return v;
     }
 
+    /** A path under the user's home, so the built-in defaults carry nobody's username. */
+    public static String underHome (String suffix) {
+        return System.getProperty("user.home").replace('\\', '/') + suffix;
+    }
+
+    /** Same for %LOCALAPPDATA%, where the game keeps its cache. */
+    public static String underLocalAppData (String suffix) {
+        String base = System.getenv("LOCALAPPDATA");
+        if (base == null || base.trim().isEmpty()) {
+            base = System.getProperty("user.home") + "/AppData/Local";
+        }
+        return base.replace('\\', '/') + suffix;
+    }
+
     /** Warns about roots that do not exist — a stale path here costs whole atlases of icons. */
     public static void report () {
         String[][] roots = {

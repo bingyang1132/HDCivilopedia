@@ -10,7 +10,7 @@ HD Civilopedia 生成工具的构建与运行说明。入口类 `model.abstracts
 mvn compile          # 仅编译（命令行）
 ```
 
-或在 VSCode 里用 Java 扩展自动编译。运行时实际用 JRE 8 跑（见 `.vscode/settings.json` 的 `JavaSE-1.8` 运行时配置）。
+或在 IDE 里编译。目标字节码是 Java 8，用 JDK 8 / 17 / 22 都能编（CI 跑 8 和 17）。
 
 > **换机器**：复制 `config.example.properties` 为 `config.properties`，改里面四个路径即可
 > （Steam 库、Mods 目录、HD mod 的文件夹名、游戏 Cache 目录）。其余全部派生，贴图目录靠

@@ -1,7 +1,24 @@
 import os, re, sqlite3, collections, io, json, glob, sys
 BS = chr(92)
-WS = "E:/SteamLibrary/steamapps/workshop/content/289070"
-MODS = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods"
+
+
+def _config(key, fallback):
+    """Same roots the generator uses; config.properties is git-ignored and machine-specific."""
+    try:
+        for line in io.open("config.properties", encoding="utf-8"):
+            k, _, v = line.partition("=")
+            if k.strip() == key and v.strip():
+                return v.strip().replace(BS, "/").rstrip("/")
+    except IOError:
+        pass
+    return fallback
+
+
+STEAM = _config("steam.folder", "C:/Program Files (x86)/Steam/steamapps")
+WS = STEAM + "/workshop/content/289070"
+MODS = _config("mods.folder",
+               os.path.expanduser("~/Documents/My Games/Sid Meier's Civilization VI/Mods"))
+OUT = sys.argv[1] if len(sys.argv) > 1 else "docs/missing-atlas-art.md"
 roots = [MODS, WS]
 tags = set()
 for lang in ('en_US','zh_Hans_CN'):
@@ -68,7 +85,7 @@ modnames = {}
 for b, p in found.items():
     mod = modroot(p); nm, au = modmeta(mod); modnames[mod] = nm
     byauthor[au.split(';')[0].split(',')[0].strip() or '?'][mod].add(want[b])
-out = io.open(r"C:/Users/1132/AppData/Local/Temp/claude/E--hdciv-hdcivilopedia/06b561b1-db06-4ebd-a53f-167aa09330ac/scratchpad/req_body.md", "w", encoding="utf-8")
+out = io.open(OUT, "w", encoding="utf-8")
 rows = sorted(byauthor.items(), key=lambda kv: -sum(tagcount[a] for m in kv[1].values() for a in m))
 for au, mods in rows:
     n = sum(tagcount[a] for m in mods.values() for a in m)

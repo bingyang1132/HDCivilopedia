@@ -15,17 +15,17 @@
 
 #### 旧系统为什么死了
 
-笑笑设计了一套 `.txt` DSL（`version` / `cat` / `subcat` / `[]` 可链接实体），当 leader 时强制
-所有开发者写，再用工具读进百科。他下台后没人再写，成了 repo 里的死代码；百科也一并没人维护，
-后来转到我们手上。
+当时的项目负责人设计了一套 `.txt` DSL（`version` / `cat` / `subcat` / `[]` 可链接实体），
+要求所有开发者写，再用工具读进百科。他卸任后没人再写，成了 repo 里的死代码；百科也一并
+停止维护，后来转到我们手上。
 
-但数据显示的病因**比「权威消失」更早**：
+但数据显示的病因**比「权威消失」更早**。14 个开发者各有一个 `.txt`：
 
 ```
-xiaoxiao.txt   683 行  10 个 version   ← schema 作者本人
-time.txt       718 行  11 个 version   ← 另一个真在用的人
-xhh.txt        171 行   6 个 version
-其余 12 个      4~69 行  1~3 个 version  ← 写了一两次就停了
+文件 A   683 行  10 个 version   ← schema 作者本人
+文件 B   718 行  11 个 version   ← 另一个真在用的人
+文件 C   171 行   6 个 version
+其余 11 个  4~69 行  1~3 个 version  ← 写了一两次就停了
 ```
 
 **大部分人在他还在任时就已经不写了**，只有 2/14 持续使用。所以这不是「权威撤离后崩溃」，
@@ -38,7 +38,7 @@ xhh.txt        171 行   6 个 version
 
 **源 A — 百科产物 diff（覆盖进百科的内容）**
 
-`E:\HDCivilopedia_history`（快捷方式 `E:\hdciv\history.lnk`）下有 20 个历史发布产物，
+归档目录（`config.properties` 的 `archive.folder`）下有 20 个历史发布产物，
 从 `HDCivilopedia_1.3.9_workshop` 到 `HDCivilopedia_20260807`。相邻两个版本的产物 diff
 **按定义就是玩家可见的变更集**——纯重构（比如 `insert or replace` → `insert or ignore`）
 产生零 diff，`+2 生产力` 正好产生一条。信噪比问题被结构性消除，不靠 agent 去猜哪些行重要。
@@ -167,9 +167,9 @@ CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wi
 还有约 507 个标签没有图标，素材只存在于 `.blp` 包里。三条路都堵住了：
 
 1. **逆向 `.blp`** —— 卡住，四条假设全排除，详见 [blp-format.md](blp-format.md)（别重试那四条）。
-2. **向作者要源图** —— 2026-08-08 XHH 反馈：**美术资源作者一般不会给**。清单
+2. **向作者要源图** —— 2026-08-08 有 mod 作者反馈：**美术资源作者一般不会给**。清单
    [missing-atlas-art.md](missing-atlas-art.md) 留着，但不指望走通。
-3. **游戏内截图** —— XHH 提的思路，也是目前唯一还成立的：写一个**程序化截图工具**，
+3. **游戏内截图** —— 社区提的思路，也是目前唯一还成立的：写一个**程序化截图工具**，
    在游戏内百科页面里逐条截图，理想情况用 **Lua 控制百科翻页**。这是社区实际在用的路子
    （Sukritact's Texture Extractor 同源），但工作量大，暂不启动。
 
@@ -234,8 +234,9 @@ CI 能盯住的是纯逻辑那部分——拼音表、搜索排序、归档、wi
 1. **授权**——上游仓库没有 LICENSE，公开衍生作品需要先取得授权。**这条是硬前置**，
    详见 [upstream-differences.md](upstream-differences.md) 的授权状态一节。
 2. `manual/wiki/` 是维基百科（CC BY-SA）与百度百科正文首段的缓存，公开前要决定怎么处理。
-3. `config.properties` 已隔离机器路径（模板 `config.example.properties`），
-   但 `.vscode/settings.json` 之类还需要过一遍。
+3. ~~机器路径与编辑器配置~~ 已处理：`config.properties` 隔离机器路径，
+   内置默认值改成从环境推导（`%USERPROFILE%` / `%LOCALAPPDATA%`）而不是硬编码某人的目录；
+   `.vscode/`、`.cursorignore` 已移出版本管理。
 4. `docs/` 目前全中文，面向外部读者可能需要一份英文说明。
 
 贡献边界已经写清楚了：[upstream-differences.md](upstream-differences.md) 记录了分叉点、

@@ -88,8 +88,7 @@ public class Main {
     public static void buildChangelog (String version, String output) throws Exception {
         System.out.println("loading changelog txt");
         Changelog changelog = new Changelog(version, version + "\\S*");
-        // File logs = new File("C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods/civ6-harmony-in-diversity/Changelog");
-        // use constant path from Tools.CHANGELOG
+        // path comes from Tools.CHANGELOG, i.e. the configured HD mod folder
         File logs = new File(Tools.CHANGELOG);
         if (!logs.exists()) {
             System.out.println("[WARNING]Changelog folder not found");

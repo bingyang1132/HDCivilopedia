@@ -1,0 +1,35 @@
+HD Civilopedia
+==============
+
+本项目是 https://gitee.com/xiaoxiaoccat/hdcivilopedia 的 fork，
+分叉点为上游提交 a0d842a（"v1.3.8"，2023-07-13）。
+
+上游作者 xiaoxiao 的工作包括（但不限于）：生成流水线的整体架构、model/ 下 30 余个
+实体类的加载与渲染、DDS 解码（tools/DDSReader）、changelog 的 .txt DSL 与其解析器
+（changelog/）、view/Page 的 HTML 渲染、双语与手机版输出。这些构成了本仓库的基础，
+其著作权属于原作者。
+
+fork 之后的改动、以及哪些属于哪一方，逐项记录在 docs/upstream-differences.md，
+该文档同时给出了自行复核 diff 的命令。
+
+许可状态
+--------
+
+上游仓库未声明任何开源许可证。按默认版权规则，上游作者保留全部权利，因此：
+
+  * 本仓库尚未公开发布；
+  * 本仓库也不能自行声明一个开源许可证——衍生作品的许可需要先取得原作者授权。
+
+取得授权后应做的：在 LICENSE 中写入双方的版权行，例如
+
+    Copyright (c) 2022-2023 xiaoxiao
+    Copyright (c) 2024-2026 <本仓库维护者>
+
+第三方内容
+----------
+
+  * manual/wiki/ 是维基百科（CC BY-SA 3.0）与百度百科正文首段的抓取缓存。
+    生成的页面对每一条都标注了来源并链接回原文。
+  * 游戏数据（*.sqlite、本地化文本）与美术资源（.dds/.blp）属于 Firaxis Games /
+    2K Games 及各 mod 作者，从未纳入本仓库的版本管理，也不随本仓库分发。
+  * docs/missing-atlas-art.md 中列出的图集与标签名，属于各自 mod 的作者。

@@ -283,7 +283,7 @@ public class Init {
         // all DLCs and mods for civ6
         File folder1 = new File(Tools.STEAM_FOLDER + "/common/Sid Meier's Civilization VI/DLC");  // DLCs
         File folder2 = new File(Tools.STEAM_FOLDER + "/workshop/content/289070");  // workshop mods
-        File folder3 = new File("C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods");  // local mods
+        File folder3 = new File(Tools.MODS_FOLDER);  // local mods; was a hardcoded absolute path
         // add mods into the dlcs list for further loading
         List<File> dlcs = new ArrayList<>();
         for (File f : folder1.listFiles()) {
@@ -842,7 +842,7 @@ public class Init {
     // and
     // E:\SteamLibrary\steamapps\workshop\content\289070\1369684991\Core\Game_Mode\Res2_Mode_Icons.sql
     // and
-    // C:\Users\1132\Documents\My Games\Sid Meier's Civilization VI\Mods\civ6-harmony-in-diversity\ModSupport\Resourceful2\HD_Resourceful2_Icons.sql
+    // e.g. <mods>/civ6-harmony-in-diversity/ModSupport/Resourceful2/HD_Resourceful2_Icons.sql
     // and (2 places in this file)
 
     // part of main function

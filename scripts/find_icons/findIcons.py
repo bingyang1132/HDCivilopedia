@@ -27,7 +27,7 @@ def find_png_folders(root_folder, output_file):
                 f.write(f'"{root}",\n')
 
 root_folder = 'E:/SteamLibrary/steamapps/workshop/content/289070'
-# root_folder = "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods"
+# root_folder = "<Documents>/My Games/Sid Meier's Civilization VI/Mods"
 output_file_dds = './find_icons/found_dds_folders.txt'
 output_file_png = './find_icons/found_png_folders.txt'
 

@@ -6,18 +6,19 @@ public interface Constants {
 
     // ---- machine-specific roots -------------------------------------------------------------
     // Values live in config.properties (git-ignored; see config.example.properties). The
-    // fallbacks below are the original hardcoded ones, so a checkout without a config file
-    // behaves exactly as before.
+    // fallbacks below are the stock install locations, derived from the environment rather than
+    // hardcoded, so a checkout with no config file still points somewhere sensible.
+    // Config.report() says which of them do not exist.
 
     public static final String STEAM_FOLDER = Config.get("steam.folder",
-            "E:/SteamLibrary/steamapps");
+            "C:/Program Files (x86)/Steam/steamapps");
     public static final String MODS_FOLDER = Config.get("mods.folder",
-            "C:/Users/1132/Documents/My Games/Sid Meier's Civilization VI/Mods");
+            Config.underHome("/Documents/My Games/Sid Meier's Civilization VI/Mods"));
     public static final String HD_MOD = MODS_FOLDER + "/" + Config.get("hd.mod.folder",
             "Civ6HarmonyInDiversity");
     /** The game's Cache directory the databases are rebuilt from. */
     public static final String DATABASES_SOURCE = Config.get("cache.source",
-            "E:/hdciv/backup/Cache");
+            Config.underLocalAppData("/Firaxis Games/Sid Meier's Civilization VI/Cache"));
 
     // ---- derived ----------------------------------------------------------------------------
 
