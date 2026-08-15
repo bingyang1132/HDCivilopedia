@@ -109,10 +109,12 @@ bug printed four warnings and affected 256 tags. Work backwards from the artifac
 
 ## Licensing
 
-⚠️ **Upstream declares no license. This repository is therefore not yet published, and
-cannot declare a license of its own** — under default copyright the upstream author retains
-all rights, and a derivative work needs their permission. See [NOTICE](NOTICE) and the
-licensing section of [docs/upstream-differences.md](docs/upstream-differences.md).
+The upstream author has given permission for this repository to be published (2026-08).
+**Upstream still declares no license, though, so this is not open source in the usual sense:
+third parties have not been granted the right to use, modify or redistribute it**, and this
+repository cannot declare a license on upstream's behalf. Making it genuinely open source
+needs upstream to pick one. See [NOTICE](NOTICE) and the licensing section of
+[docs/upstream-differences.md](docs/upstream-differences.md).
 
 `manual/wiki/` holds cached lead paragraphs from Wikipedia, used under CC BY-SA 3.0: every
 entry records its source URL and every generated page links back to it. The single entry

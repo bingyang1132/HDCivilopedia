@@ -98,9 +98,10 @@ CI（`.github/workflows/ci.yml`）跑的就是这两条，JDK 8 / 17 两条腿�
 
 ## 授权
 
-⚠️ **上游仓库未声明许可证，因此本仓库尚未公开发布，也还不能添加自己的 LICENSE。**
-按默认版权规则，上游作者保留全部权利，公开分发衍生作品需要其授权。
-详见 [upstream-differences.md 的授权状态一节](docs/upstream-differences.md#授权状态开源前必须先解决)
+上游作者已同意本仓库公开发布（2026-08）。**但上游仓库仍未声明许可证，所以这还不是通常
+意义上的开源**：第三方并未获得使用、修改、再分发的授权，本仓库也不能替上游代码声明许可证。
+要真正开源，还需要上游作者选定一个许可证。
+详见 [upstream-differences.md 的授权状态一节](docs/upstream-differences.md#授权状态)
 与 [NOTICE](NOTICE)。
 
 `manual/wiki/` 是条目首段的抓取缓存，内容来自维基百科，按 CC BY-SA 3.0 使用：每个 json 记录
