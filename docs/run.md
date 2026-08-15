@@ -59,7 +59,31 @@ java -cp <classpath> model.abstracts.Main          # 无参 = 全流程(跳过in
 java -Dhd.limit=50 -Dhd.verbose=true -cp <classpath> model.abstracts.Main init
 ```
 
-## 5. 正确性验证
+## 5. 打包 APK
+
+安卓版是一个 WebView 壳，把 `output_android/` 整个塞进 `assets/`。壳工程在
+`E:\MyApplication`（不在本仓库里）。跑完 `after_init` 后：
+
+```
+powershell -ExecutionPolicy Bypass -File scripts\build_apk.ps1
+```
+
+脚本做三件事：`robocopy /MIR` 把 `output_android/` 镜像到
+`app\src\main\assets`（`/MIR` 会删掉上一版留下的孤儿页面），`gradlew assembleDebug`，
+然后把包复制进本次运行的归档快照。产物是
+`app\build\outputs\apk\debug\debug-1.0.apk`，约 121 MB，用调试签名，可直接安装；
+归档副本是 `<archive.folder>\HDCivilopedia_<yyyyMMdd>\HDCivilopedia_<yyyyMMdd>.apk`，
+沿用手工归档一直以来的命名（apk 与所在文件夹同名）。`Archive` 重跑同一天时只删自己写的
+`json/` 和两个 zip，不会碰这个 apk。壳工程路径不同时用 `-AndroidProject <路径>` 覆盖。
+
+`versionCode`/`versionName` 在 `app/build.gradle` 里写死成 1 / 1.0，所以每次出包同名；
+需要区分版本得手工改。release 变体没有配签名，`assembleRelease` 出来的包装不上，
+故脚本只打 debug。
+
+验证包里确实是新产物，最省事的是按路径比字节：把 APK 当 zip 打开，
+`assets/<lang>/...` 与 `output_android/<lang>/...` 的 sha1 应当一致。
+
+## 6. 正确性验证
 
 最省事的方式是 `Main audit`（约 1 秒）：它对比 `manual/audit-baseline.json`，
 只在指标往坏的方向动时标 `<== WORSE`。改动前后各跑一次；确认改好了就 `Main audit save`
