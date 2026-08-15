@@ -41,3 +41,8 @@ ChangelogResouce.json
 # it, follow the curl recipe in the comment above the CIVILIZATION_CHINA row of
 # manual/wiki/_overrides.tsv; without it that page falls back to the game's own text.
 /manual/wiki/zh_Hans_CN/CIVILIZATION_CHINA.json
+
+# The release signing key's password. It belongs outside every checkout -- this repository is
+# public, and a key that leaks cannot be revoked, only replaced, which strands every installed
+# copy of the app. See docs/run.md; the real file lives next to the .jks.
+/keystore.propert*

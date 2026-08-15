@@ -68,17 +68,26 @@ java -Dhd.limit=50 -Dhd.verbose=true -cp <classpath> model.abstracts.Main init
 powershell -ExecutionPolicy Bypass -File scripts\build_apk.ps1
 ```
 
-脚本做三件事：`robocopy /MIR` 把 `output_android/` 镜像到
-`app\src\main\assets`（`/MIR` 会删掉上一版留下的孤儿页面），`gradlew assembleDebug`，
-然后把包复制进本次运行的归档快照。产物是
-`app\build\outputs\apk\debug\debug-1.0.apk`，约 121 MB，用调试签名，可直接安装；
-归档副本是 `<archive.folder>\HDCivilopedia_<yyyyMMdd>\HDCivilopedia_<yyyyMMdd>.apk`，
-沿用手工归档一直以来的命名（apk 与所在文件夹同名）。`Archive` 重跑同一天时只删自己写的
-`json/` 和两个 zip，不会碰这个 apk。壳工程路径不同时用 `-AndroidProject <路径>` 覆盖。
+脚本做四件事：`robocopy /MIR` 把 `output_android/` 镜像到
+`app\src\main\assets`（`/MIR` 会删掉上一版留下的孤儿页面），`gradlew assembleRelease`，
+用 `apksigner` 验一遍签名，然后把包复制进本次运行的归档快照。归档副本是
+`<archive.folder>\HDCivilopedia_<yyyyMMdd>\HDCivilopedia_<yyyyMMdd>.apk`，沿用手工归档
+一直以来的命名（apk 与所在文件夹同名）。`Archive` 重跑同一天时只删自己写的 `json/` 和两个
+zip，不会碰这个 apk。壳工程路径不同时用 `-AndroidProject <路径>` 覆盖。
 
-`versionCode`/`versionName` 在 `app/build.gradle` 里写死成 1 / 1.0，所以每次出包同名；
-需要区分版本得手工改。release 变体没有配签名，`assembleRelease` 出来的包装不上，
-故脚本只打 debug。
+**版本号**取本次归档快照的日期：脚本把它作为 `-PhdVersion=20260815` 传给 Gradle，
+`versionCode` 和 `versionName` 都用它，产物叫 `release-20260815.apk`。于是版本号、
+tag、快照文件夹、apk 文件名全是同一个日期，拿到一个包就能反查是哪次运行打的。
+
+**签名**配置在 `app/build.gradle`，从 `E:\keys\keystore.properties` 读
+`storeFile`/`storePassword`/`keyAlias`/`keyPassword`。该文件在所有 checkout 之外，不进
+版本库；**丢了就再也发不出能原地升级的新版本**，务必离线备份 `.jks` 和口令。没有这个文件
+时 release 变体保持未签名而不是配置失败（这样没有密钥的机器也能编译），但脚本的
+`apksigner` 检查会拦下来——未签名的包装不到任何设备上，不能靠日志绿灯当数。
+
+`applicationId` 是 `com.civ6hd.pedia`。`namespace` 仍是模板留下的
+`com.example.myapplication`，那只是源码和 R 类所在的 Java 包，不构成对外身份，改它要连带
+移动源码目录，没必要。
 
 验证包里确实是新产物，最省事的是按路径比字节：把 APK 当 zip 打开，
 `assets/<lang>/...` 与 `output_android/<lang>/...` 的 sha1 应当一致。
