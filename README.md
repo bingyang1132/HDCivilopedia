@@ -14,6 +14,10 @@ build   cut      read   write   render
  DBs   icons     DBs    JSON     HTML
 ```
 
+**Download the Android edition** — the same pages in a WebView shell, offline once installed —
+from [Releases](https://github.com/bingyang1132/HDCivilopedia/releases). Its version number is
+the date of the data snapshot it was built from.
+
 > **This repository cannot run on its own.** The generator reads an installed copy of the
 > game: its databases (~300 MB), its localization tables and its texture atlases, none of
 > which are — or will be — in version control. CI therefore only exercises the logic that

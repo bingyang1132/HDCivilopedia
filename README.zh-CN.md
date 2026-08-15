@@ -13,6 +13,9 @@ init → icons → load → write → page
 建库   切图标   读库    写 JSON  渲染 HTML
 ```
 
+**下载安卓版**：同一套页面装进 WebView 壳，装好后离线可查，见
+[Releases](https://github.com/bingyang1132/HDCivilopedia/releases)。版本号即数据快照日期。
+
 ## 来源与分工
 
 本项目 fork 自 **[xiaoxiaoccat/hdcivilopedia](https://gitee.com/xiaoxiaoccat/hdcivilopedia)**，
